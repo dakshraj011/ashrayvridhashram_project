@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #FFF6E9;
+    color: #0f172a;
+    font-family: 'Mukta', sans-serif;
+    letter-spacing: 0.025em;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-size: 1.15rem; /* Enhanced readability for elderly */
+    line-height: 1.65;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Tiro Devanagari Hindi', serif;
+    color: #852D36;
+  }
+}
+
+.dark body {
+  background-color: #030712;
+  color: #f8fafc;
+}
+
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: #D9AA55;
+}
+
+/* Floating Animations for ॐ & 卐 Background Symbols & Logo Accents */
+@keyframes float-gentle {
+  0% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(-30px) scale(1.12);
+    opacity: 0.55;
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+    opacity: 0.35;
+  }
+}
+
+@keyframes float-rotate {
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+    opacity: 0.30;
+  }
+  50% {
+    transform: translateY(-25px) rotate(180deg) scale(1.1);
+    opacity: 0.50;
+  }
+  100% {
+    transform: translateY(0px) rotate(360deg) scale(1);
+    opacity: 0.30;
+  }
+}
+
+@keyframes float-pulse {
+  0% {
+    transform: translateY(0px) scale(0.95);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translateY(-35px) scale(1.18);
+    opacity: 0.60;
+  }
+  100% {
+    transform: translateY(0px) scale(0.95);
+    opacity: 0.25;
+  }
+}
+
+@keyframes float-drift {
+  0% {
+    transform: translate(0px, 0px) rotate(0deg);
+    opacity: 0.32;
+  }
+  50% {
+    transform: translate(15px, -28px) rotate(8deg);
+    opacity: 0.52;
+  }
+  100% {
+    transform: translate(0px, 0px) rotate(0deg);
+    opacity: 0.32;
+  }
+}
+
+.animate-float-gentle {
+  animation: float-gentle 12s ease-in-out infinite;
+}
+
+.animate-float-rotate {
+  animation: float-rotate 22s linear infinite;
+}
+
+.animate-float-pulse {
+  animation: float-pulse 16s ease-in-out infinite;
+}
+
+.animate-float-drift {
+  animation: float-drift 18s ease-in-out infinite;
+}
+
+
+/* Krishna Aura Glow */
+.krishna-aura {
+  box-shadow: 0 0 50px rgba(232, 121, 36, 0.3), 0 0 100px rgba(217, 170, 85, 0.2);
+}
+
+/* Premium Buttons */
+.btn-primary {
+  background: linear-gradient(135deg, #E87924 0%, #D26312 100%);
+  color: white;
+  font-weight: 800;
+  padding: 0.85rem 1.75rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 20px -5px rgba(232, 121, 36, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #F58A35 0%, #E87924 100%);
+  box-shadow: 0 15px 25px -5px rgba(232, 121, 36, 0.6);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #852D36 0%, #6F222A 100%);
+  color: #FFF6E9;
+  font-weight: 800;
+  padding: 0.85rem 1.75rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 20px -5px rgba(133, 45, 54, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  border: 1px solid rgba(217, 170, 85, 0.4);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #9C3540 0%, #852D36 100%);
+  box-shadow: 0 15px 25px -5px rgba(133, 45, 54, 0.6);
+  transform: translateY(-3px) scale(1.02);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #D9AA55 0%, #C2913A 100%);
+  color: #5A1920;
+  font-weight: 800;
+  padding: 0.85rem 1.75rem;
+  border-radius: 1rem;
+  box-shadow: 0 10px 20px -5px rgba(217, 170, 85, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  border: 1px solid rgba(133, 45, 54, 0.2);
+}
+
+.btn-gold:hover {
+  background: linear-gradient(135deg, #EBC06D 0%, #D9AA55 100%);
+  box-shadow: 0 15px 25px -5px rgba(217, 170, 85, 0.6);
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* Glassmorphism Krishna Cards */
+.card-krishna {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(217, 170, 85, 0.35);
+  border-radius: 1.5rem;
+  padding: 1.75rem;
+  box-shadow: 0 10px 30px -10px rgba(133, 45, 54, 0.08);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .card-krishna {
+  background: rgba(15, 23, 42, 0.95);
+  border-color: rgba(217, 170, 85, 0.25);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.card-krishna:hover {
+  border-color: rgba(232, 121, 36, 0.6);
+  box-shadow: 0 20px 40px -15px rgba(232, 121, 36, 0.25);
+  transform: translateY(-4px);
+}
+
+.gold-divider {
+  height: 4px;
+  width: 7rem;
+  background: linear-gradient(to right, #E87924, #D9AA55, #852D36);
+  border-radius: 9999px;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF6E9;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #030712;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #E87924, #D9AA55);
+  border-radius: 5px;
+}
