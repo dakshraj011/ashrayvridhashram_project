@@ -3,6 +3,7 @@ import { SectionHeader, PeacockFeatherIcon } from '../components/KrishnaAccents'
 import api from '../services/api';
 import type { HomeInfo } from '../types';
 import { Heart, ShieldCheck, Sun, Sparkles, CheckCircle2, Phone, Mail, MapPin, Code2, ExternalLink } from 'lucide-react';
+import developerPhoto from '../assets/developer-daksh.jpg';
 
 const GithubIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -13,6 +14,12 @@ const GithubIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" })
 const LinkedinIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
     <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
+  </svg>
+);
+
+const InstagramIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
   </svg>
 );
 
@@ -194,11 +201,11 @@ export const About: React.FC = () => {
               <div className="relative group">
                 <div className="absolute -inset-1 bg-gradient-to-r from-saffron via-gold to-emerald-500 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
                 <img
-                  src="/developer-daksh.jpg"
+                  src={developerPhoto}
                   alt="Daksh Raj Singh - Website Developer"
                   className="relative w-48 h-48 sm:w-56 sm:h-56 object-cover object-top rounded-2xl border-4 border-white dark:border-slate-900 shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80";
+                    (e.target as HTMLImageElement).src = "/developer-daksh.jpg";
                   }}
                 />
               </div>
@@ -232,7 +239,31 @@ export const About: React.FC = () => {
               {/* Social Connections */}
               <div className="pt-2 flex flex-wrap items-center gap-4">
                 <a
-                  href="https://github.com"
+                  href="https://www.linkedin.com/in/daksh-raj-singh-b68086295?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-[#0077b5] text-white hover:bg-[#006396] shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
+                  title="Daksh Raj Singh on LinkedIn"
+                >
+                  <LinkedinIcon className="w-5 h-5 text-white" />
+                  <span>LinkedIn Profile</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                </a>
+
+                <a
+                  href="https://instagram.com/dakshraj_singh11?srtk=aGM0czMweWpmYXRk&utm_source=qr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white hover:opacity-95 shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
+                  title="Daksh Raj Singh on Instagram (@dakshraj_singh11)"
+                >
+                  <InstagramIcon className="w-5 h-5 text-white" />
+                  <span>Instagram Profile</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                </a>
+
+                <a
+                  href="https://github.com/dakshraj011"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-700 shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
@@ -240,18 +271,6 @@ export const About: React.FC = () => {
                 >
                   <GithubIcon className="w-5 h-5 text-gold" />
                   <span>GitHub Profile</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-70" />
-                </a>
-
-                <a
-                  href="https://linkedin.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-blue-700 text-white hover:bg-blue-800 shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
-                  title="Daksh Raj Singh on LinkedIn"
-                >
-                  <LinkedinIcon className="w-5 h-5 text-white" />
-                  <span>LinkedIn Profile</span>
                   <ExternalLink className="w-3.5 h-3.5 opacity-70" />
                 </a>
               </div>
