@@ -1,11 +1,26 @@
 <!doctype html>
-<html lang="hi" dir="ltr">
+<html lang="hi" dir="ltr" class="light">
   <head>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="light" />
     <link rel="icon" type="image/jpeg" href="/aashray-logo.jpg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>आश्रय वृद्धाश्रम | Aashray Old Age Home</title>
     <meta name="description" content="आश्रय वृद्धाश्रम - वरिष्ठ नागरिकों का अपना स्नेहपूर्ण, सुरक्षित एवं पवित्र धाम।" />
+    
+    <script type="text/javascript">
+      // Always open in bright/light mode by default, even on dark-mode phones
+      try {
+        var savedTheme = localStorage.getItem('aashray_theme');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.documentElement.classList.remove('light');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        }
+      } catch (e) {}
+    </script>
     
     <!-- Google Fonts for Hindi (Mukta & Tiro Devanagari Hindi) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
