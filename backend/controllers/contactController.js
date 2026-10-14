@@ -1,4 +1,6 @@
 const db = require('../db/initDb');
+const ContactSubmission = require('../models/ContactSubmission');
+const { isMongoReady } = require('../db/mongoConnect');
 
 // Submit Contact Form (Public)
 const submitContact = async (req, res) => {
@@ -12,11 +14,37 @@ const submitContact = async (req, res) => {
       });
     }
 
+    const cleanMobile = (mobile || '').toString().trim().replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।'
+      });
+    }
+
     const result = await db.query(
       `INSERT INTO contact_submissions (name, mobile, email, subject, message, status)
        VALUES (?, ?, ?, ?, ?, 'अपठित')`,
-      [name, mobile, email || null, subject || 'सामान्य पूछताछ', message]
+      [name, cleanMobile, email || null, subject || 'सामान्य पूछताछ', message]
     );
+
+    // Save to MongoDB collection if connected
+    if (isMongoReady()) {
+      try {
+        await ContactSubmission.create({
+          name,
+          mobile: cleanMobile,
+          email: email || null,
+          subject: subject || 'सामान्य पूछताछ',
+          message,
+          status: 'अपठित',
+          legacy_id: result.insertId
+        });
+        console.log(`🍃 [MongoDB] Contact form submission saved to MongoDB: ${name} (${cleanMobile})`);
+      } catch (mongoErr) {
+        console.warn('⚠️ [MongoDB] Contact save notice:', mongoErr.message);
+      }
+    }
 
     res.status(201).json({
       success: true,

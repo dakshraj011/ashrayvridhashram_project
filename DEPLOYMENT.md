@@ -68,10 +68,46 @@ AggregateError [ECONNREFUSED]:
    | `NODE_ENV` | `production` |
    | `PORT` | `10000` |
    | `JWT_SECRET` | `aashray_krishna_prem_jwt_secret_key_2026_super_secure` |
-   | `DB_DRIVER` | `sqlite` |
+   | `DATABASE_URL` | *(आपकी Aiven MySQL सर्विस URI - नीचे देखें)* |
+
+   > **💡 नोट:** यदि आप अभी कोई बाहरी डेटाबेस नहीं जोड़ना चाहते, तो `DATABASE_URL` की जगह `DB_DRIVER = sqlite` सेट कर सकते हैं।
 
 5. **Deploy Web Service** पर क्लिक करें। 
    - 2-3 मिनट में बिल्ड पूरा होगा और आपको लाइव लिंक (जैसे: `https://aashray-old-age-home.onrender.com`) मिल जाएगा।
+
+---
+
+## 🗄️ Aiven मुफ़्त क्लाउड MySQL सेटअप (100% Free Forever - 5 GB)
+
+Aiven आपको बिना किसी क्रेडिट कार्ड के **5 GB का मुफ़्त MySQL डेटाबेस** देता है, जिसमें आपका डेटा हमेशा सुरक्षित रहेगा और कभी डिलीट नहीं होगा।
+
+### चरण 1: Aiven पर अकाउंट बनाएँ
+1. [https://aiven.io/](https://aiven.io/) पर जाएँ और **Sign Up** पर क्लिक करें (आप सीधे Google या GitHub से लॉगिन कर सकते हैं)।
+2. ईमेल वेरिफाई करें।
+
+### चरण 2: नया MySQL डेटाबेस बनाएँ
+1. Aiven डैशबोर्ड में **Create Service** बटन पर क्लिक करें।
+2. डेटाबेस में **MySQL** चुनें।
+3. क्लाउड प्रोवाइडर व रीजन चुनें (उदा: AWS या Google Cloud - कोई भी नजदीकी रीजन चुन सकते हैं)।
+4. सर्विस प्लान में **Free Plan** (Free tier) चुनें।
+5. **Create Service** पर क्लिक करें। 1-2 मिनट में आपका डेटाबेस तैयार हो जाएगा।
+
+### चरण 3: Service URI कॉपी करें
+1. डेटाबेस बनने के बाद Overview पेज पर आपको **Service URI** दिखाई देगा, जैसे:
+   ```text
+   mysql://avnadmin:AVNS_xxxxxxxxx@mysql-xxxxx.aivencloud.com:12345/defaultdb?ssl-mode=REQUIRED
+   ```
+2. इस URI को कॉपी कर लें।
+
+### चरण 4: अपने प्रोजेक्ट में जोड़ें
+- **लोकल टेस्टिंग के लिए:** `backend/.env` में जोड़ें:
+  ```env
+  DATABASE_URL=mysql://avnadmin:AVNS_xxxxxxxxx@mysql-xxxxx.aivencloud.com:12345/defaultdb?ssl-mode=REQUIRED
+  ```
+- **Render.com पर डिप्लॉयमेंट के लिए:** 
+  Render के Environment Variables सेक्शन में `DATABASE_URL` की वैल्यू में यही URI पेस्ट कर दें।
+
+> **✅ स्वतः सेटअप:** जब आपका बैकएंड पहली बार कनेक्ट होगा, तो वह अपने-आप सभी 11 टेबल्स (`users`, `needs`, `meal_requests`, `events`, आदि) बना देगा, डिफ़ॉल्ट डेटा भर देगा और एडमिन यूजर रजिस्टर कर देगा। आपको कुछ भी मैन्युअल करने की ज़रूरत नहीं है!
 
 ---
 

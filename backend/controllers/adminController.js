@@ -75,7 +75,12 @@ const addManager = async (req, res) => {
       return res.status(400).json({ success: false, message: 'कृपया नाम, मोबाइल नंबर और पासवर्ड दर्ज करें।' });
     }
 
-    const existing = await db.query(`SELECT * FROM users WHERE mobile = ?`, [mobile]);
+    const cleanMobile = (mobile || '').toString().trim().replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
+      return res.status(400).json({ success: false, message: 'कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।' });
+    }
+
+    const existing = await db.query(`SELECT * FROM users WHERE mobile = ?`, [cleanMobile]);
     if (existing && existing.length > 0) {
       return res.status(400).json({ success: false, message: 'यह मोबाइल नंबर पहले से पंजीकृत है।' });
     }
@@ -83,7 +88,7 @@ const addManager = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await db.query(
       `INSERT INTO users (name, email, mobile, password, role, address, is_active) VALUES (?, ?, ?, ?, 'manager', ?, 1)`,
-      [name, email || null, mobile, hashedPassword, address || '']
+      [name, email || null, cleanMobile, hashedPassword, address || '']
     );
 
     res.status(201).json({
@@ -127,4 +132,29 @@ const deleteUser = async (req, res) => {
   }
 };
 
-module.exports = { getDashboardStats, getUsers, addManager, toggleUserStatus, deleteUser };
+// Sync Data with MongoDB
+const { syncSqliteToMongo } = require('../utils/syncMongo');
+const { getMongoStatus } = require('../db/mongoConnect');
+
+const syncMongoData = async (req, res) => {
+  try {
+    const result = await syncSqliteToMongo();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+const getMongoInfo = (req, res) => {
+  res.json({ success: true, mongo: getMongoStatus() });
+};
+
+module.exports = {
+  getDashboardStats,
+  getUsers,
+  addManager,
+  toggleUserStatus,
+  deleteUser,
+  syncMongoData,
+  getMongoInfo
+};

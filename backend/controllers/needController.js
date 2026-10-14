@@ -1,4 +1,6 @@
 const db = require('../db/initDb');
+const Need = require('../models/Need');
+const { isMongoReady } = require('../db/mongoConnect');
 
 // Get all needs
 const getNeeds = async (req, res) => {
@@ -51,6 +53,27 @@ const createNeed = async (req, res) => {
         req.user.id
       ]
     );
+
+    // Save to MongoDB collection if connected
+    if (isMongoReady()) {
+      try {
+        await Need.create({
+          title,
+          category,
+          description: description || '',
+          required_quantity: parseInt(required_quantity, 10),
+          available_quantity: parseInt(available_quantity || 0, 10),
+          unit: unit || 'इकाई',
+          photo_url: photo_url || null,
+          status: 'सक्रिय',
+          created_by: req.user.id,
+          legacy_id: result.insertId
+        });
+        console.log(`🍃 [MongoDB] Need saved to MongoDB: ${title} (${category})`);
+      } catch (mongoErr) {
+        console.warn('⚠️ [MongoDB] Need save notice:', mongoErr.message);
+      }
+    }
 
     res.status(201).json({
       success: true,

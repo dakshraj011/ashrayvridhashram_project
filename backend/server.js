@@ -4,6 +4,10 @@ const path = require('path');
 require('dotenv').config();
 
 const db = require('./db/initDb');
+const { connectMongoDB, getMongoStatus } = require('./db/mongoConnect');
+
+// Connect to MongoDB (if MONGODB_URI configured)
+connectMongoDB();
 
 const authRoutes = require('./routes/authRoutes');
 const homeRoutes = require('./routes/homeRoutes');
@@ -61,6 +65,7 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     app: 'Aashray Old Age Home API',
     dbDriver: db.driver,
+    mongo: getMongoStatus(),
     time: new Date().toISOString()
   });
 });

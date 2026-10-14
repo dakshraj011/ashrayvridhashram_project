@@ -20,60 +20,70 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter validation
+// File filter validation: Supports Images AND Videos
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|webp|gif/;
-  const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  const mimeType = allowedTypes.test(file.mimetype);
+  const allowedExts = /jpeg|jpg|png|webp|gif|mp4|webm|mov|mkv|avi|mpeg/;
+  const extName = allowedExts.test(path.extname(file.originalname).toLowerCase());
+  const mimeType = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
 
   if (extName && mimeType) {
     return cb(null, true);
   } else {
-    cb(new Error('केवल इमेज फाइलें (JPG, PNG, WEBP, GIF) ही अपलोड की जा सकती हैं!'));
+    cb(new Error('केवल इमेज (JPG, PNG, WEBP, GIF) या वीडियो (MP4, WEBM, MOV) फ़ाइलें ही अपलोड की जा सकती हैं!'));
   }
 };
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB max for videos & images
   fileFilter: fileFilter
 });
 
-// Cloudinary upload helper
+// Cloudinary upload helper: Supports Free Cloud Storage for Images AND Videos
 const processImageUpload = async (file) => {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  if (cloudName && apiKey && apiSecret) {
+  const isConfigured = Boolean(cloudName && apiKey && apiSecret);
+
+  if (isConfigured) {
     cloudinary.config({
       cloud_name: cloudName,
       api_key: apiKey,
-      api_secret: apiSecret
+      api_secret: apiSecret,
+      secure: true
     });
 
     try {
+      const isVideo = file.mimetype.startsWith('video/');
       const result = await cloudinary.uploader.upload(file.path, {
-        folder: 'aashray_uploads'
+        folder: 'aashray_uploads',
+        resource_type: 'auto', // Automatically detects images and videos
       });
-      // Optionally clean local file after cloud upload
+
+      // Clean local temporary file after cloud upload
       if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+
       return {
         url: result.secure_url,
         isCloud: true,
-        message: 'इमेज सफलतापूर्वक क्लाउड पर अपलोड की गई।'
+        resourceType: result.resource_type || (isVideo ? 'video' : 'image'),
+        message: `${isVideo ? 'वीडियो' : 'इमेज'} सफलतापूर्वक मुफ़्त क्लाउड स्टोरेज (Cloudinary) पर सहेज दी गई!`
       };
     } catch (error) {
       console.warn('⚠️ Cloudinary upload failed, using local file URL:', error.message);
     }
   }
 
-  // Fallback to local server URL
+  // Fallback to local server static URL if Cloudinary is not configured yet
   const localUrl = `/uploads/${path.basename(file.path)}`;
+  const isVideo = file.mimetype.startsWith('video/');
   return {
     url: localUrl,
     isCloud: false,
-    message: 'इमेज लोकल सर्वर पर सहेजी गई (Cloudinary क्रेडेंशियल मिलने पर क्लाउड पर अपलोड होगी)।'
+    resourceType: isVideo ? 'video' : 'image',
+    message: `${isVideo ? 'वीडियो' : 'इमेज'} लोकल सर्वर पर सहेजी गई (Cloudinary क्रेडेंशियल्स जोड़ने पर स्वतः मुफ़्त क्लाउड पर स्टोर होगी)।`
   };
 };
 

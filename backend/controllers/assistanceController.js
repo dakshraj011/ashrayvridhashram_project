@@ -1,4 +1,6 @@
 const db = require('../db/initDb');
+const AssistanceRequest = require('../models/AssistanceRequest');
+const { isMongoReady } = require('../db/mongoConnect');
 
 // Submit Elderly Assistance Request
 const createAssistanceRequest = async (req, res) => {
@@ -12,13 +14,42 @@ const createAssistanceRequest = async (req, res) => {
       });
     }
 
+    const cleanContact = (contact_number || '').toString().trim().replace(/\D/g, '');
+    if (cleanContact.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'कृपया 10 अंकों का मान्य संपर्क मोबाइल नंबर दर्ज करें।'
+      });
+    }
+
     const userId = req.user ? req.user.id : 0;
 
     const result = await db.query(
       `INSERT INTO assistance_requests (user_id, elderly_name, elderly_age, contact_number, address, assistance_type, description, photo_url, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'लंबित')`,
-      [userId, elderly_name, elderly_age ? parseInt(elderly_age, 10) : null, contact_number, address, assistance_type, description, photo_url || null]
+      [userId, elderly_name, elderly_age ? parseInt(elderly_age, 10) : null, cleanContact, address, assistance_type, description, photo_url || null]
     );
+
+    // Save to MongoDB collection if connected
+    if (isMongoReady()) {
+      try {
+        await AssistanceRequest.create({
+          elderly_name,
+          elderly_age: elderly_age ? parseInt(elderly_age, 10) : null,
+          contact_number: cleanContact,
+          address,
+          assistance_type,
+          description,
+          photo_url: photo_url || null,
+          status: 'लंबित',
+          user_id: userId,
+          legacy_id: result.insertId
+        });
+        console.log(`🍃 [MongoDB] Assistance / Medicine request saved to MongoDB: ${elderly_name} (${cleanContact}) - ${assistance_type}`);
+      } catch (mongoErr) {
+        console.warn('⚠️ [MongoDB] Assistance save notice:', mongoErr.message);
+      }
+    }
 
     if (userId > 0) {
       await db.query(

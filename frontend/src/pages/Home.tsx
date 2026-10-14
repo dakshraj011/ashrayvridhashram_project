@@ -4,6 +4,7 @@ import { SectionHeader, OmSymbol, SwastikSymbol, PeacockFeatherIcon, AashrayLogo
 import { StatusBadge } from '../components/StatusBadge';
 import { ImageSlider } from '../components/ImageSlider';
 import api from '../services/api';
+import heroPhoto from '../assets/hero_photo.jpeg';
 import type { Need, Event, HomeInfo } from '../types';
 import { Heart, Calendar, Users, Utensils, Gift, ArrowRight, ShieldCheck, Sparkles, CheckCircle2 } from 'lucide-react';
 
@@ -37,16 +38,16 @@ export const Home: React.FC = () => {
 
   return (
     <div className="space-y-20 pb-20">
-      
+
       {/* KRISHNA INSPIRED HERO SECTION */}
       <section className="relative overflow-hidden bg-gradient-to-b from-amber-100/80 via-cream to-[#FFF6E9] dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 pt-10 pb-20 px-4 sm:px-6 lg:px-8 border-b-2 border-gold/40 shadow-inner">
-        
+
         {/* Subtle Ambient Background Gradients */}
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-saffron/20 rounded-full blur-3xl pointer-events-none"></div>
         <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-gold/20 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-          
+
           {/* Left Text Block */}
           <div className="space-y-4 sm:space-y-6 text-center lg:text-left">
             <div className="flex items-center gap-3 justify-center lg:justify-start mb-2">
@@ -63,7 +64,7 @@ export const Home: React.FC = () => {
               {homeInfo?.name || 'आश्रय वृद्धाश्रम'}
             </h1>
 
-            
+
             <p className="text-xl sm:text-2xl md:text-3xl text-saffron-600 font-extrabold font-heading">
               {homeInfo?.tagline || 'वरिष्ठ नागरिकों का अपना स्नेहपूर्ण एवं पावन धाम'}
             </p>
@@ -97,14 +98,14 @@ export const Home: React.FC = () => {
           {/* Right Hero Image (Lord Krishna Inspired Art Image + Glowing Aura) */}
           <div className="relative flex justify-center mt-4 lg:mt-0">
             <div className="absolute -inset-4 bg-gradient-to-tr from-saffron via-gold to-maroon rounded-3xl blur-2xl opacity-40 animate-pulse"></div>
-            
+
             <div className="relative rounded-3xl overflow-hidden border-4 border-gold shadow-2xl krishna-aura max-w-lg w-full bg-maroon">
               <img
-                src="https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=1000&q=80"
+                src={heroPhoto}
                 alt="आश्रय धाम में आनंदित बुजुर्ग सदस्य"
                 className="w-full h-[280px] sm:h-[400px] md:h-[450px] object-cover transform hover:scale-105 transition-transform duration-700"
               />
-              
+
               <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-maroon via-maroon/80 to-transparent p-4 sm:p-6 text-white text-center">
                 <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-1">
                   <PeacockFeatherIcon className="w-5 h-5 sm:w-7 sm:h-7" />
@@ -121,7 +122,7 @@ export const Home: React.FC = () => {
       {/* VISUALLY ATTRACTIVE HIGHLIGHT SERVICES CARDS */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          
+
           <div className="card-krishna text-center space-y-4 group">
             <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-saffron to-amber-500 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
               <Utensils className="w-9 h-9" />
@@ -167,8 +168,8 @@ export const Home: React.FC = () => {
 
       {/* IMAGE SLIDER SECTION */}
       <section className="relative z-10 py-6">
-        <SectionHeader 
-          title="॥ आश्रय धाम जीवन झलकियाँ ॥" 
+        <SectionHeader
+          title="॥ आश्रय धाम जीवन झलकियाँ ॥"
           subtitle="हमारे आश्रम परिसर में निवास कर रहे बुजुर्गों के खुशहाल जीवन, सात्विक गतिविधियों तथा प्राकृतिक परिवेश के दृश्य"
         />
         <ImageSlider />
@@ -177,7 +178,7 @@ export const Home: React.FC = () => {
       {/* OLD AGE HOME VISUAL OVERVIEW & FACILITIES */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="bg-gradient-to-br from-cream via-amber-50 to-cream dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 rounded-3xl border-2 border-gold/50 p-8 sm:p-12 shadow-2xl space-y-8">
-          
+
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <span className="text-saffron font-bold text-sm bg-saffron/10 px-4 py-1.5 rounded-full border border-saffron/30">
               ॥ आश्रम परिचय एवं भौतिक सुविधाएँ ॥
@@ -298,7 +299,7 @@ export const Home: React.FC = () => {
       {/* MEAL SPONSORSHIP BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="bg-gradient-to-r from-maroon via-maroon-600 to-saffron text-white rounded-3xl p-8 sm:p-14 shadow-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8 border-4 border-gold">
-          
+
           <div className="space-y-4 max-w-2xl text-center md:text-left">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gold/20 text-gold rounded-full text-sm font-bold border border-gold/40">
               <Sparkles className="w-4 h-4" /> अन्नदान महादान

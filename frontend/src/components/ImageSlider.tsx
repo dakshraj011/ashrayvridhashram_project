@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { OmSymbol, SwastikSymbol, KrishnaLotusEmblem } from './KrishnaAccents';
+import memory1 from '../assets/memory1.png';
+import memory2 from '../assets/memory2.jpeg';
+import memory3 from '../assets/memory3.png';
 
 interface Slide {
   id: number;
@@ -13,21 +16,21 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: 1,
-    url: 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=1200&q=80',
+    url: memory1,
     title: 'मुस्कुराते चेहरे एवं अपनत्व भरा परिवार',
     subtitle: 'हमारे आश्रय धाम में बुजुर्ग माता-पिता समान निवासियों के बीच प्यार और सम्मान',
     badge: 'आनंदित जीवन'
   },
   {
     id: 2,
-    url: 'https://images.unsplash.com/photo-1516307365426-bea591f05011?auto=format&fit=crop&w=1200&q=80',
-    title: 'सुंदर उद्यान में प्राकृतिक एवं सुखद समय',
-    subtitle: 'हरे-भरे बगीचों में सुबह की धूप, शुद्ध हवा और साथ में बिताए यादगार क्षण',
+    url: memory2,
+    title: 'सुंदर वातावरण में प्राकृतिक एवं सुखद समय',
+    subtitle: 'आश्रम के प्रांगण में धूप, शुद्ध हवा और साथ में बिताए यादगार स्नेहपूर्ण क्षण',
     badge: 'प्रकृति एवं स्वास्थ्य'
   },
   {
     id: 3,
-    url: 'https://images.unsplash.com/photo-1581579438747-1dc8d1e2729f?auto=format&fit=crop&w=1200&q=80',
+    url: memory3,
     title: 'उल्लासपूर्ण उत्सव एवं सांस्कृतिक कार्यक्रम',
     subtitle: 'सभी प्रमुख त्योहार, भजन-सत्संग तथा मांगलिक अवसर एक साथ मिलकर मनाना',
     badge: 'उल्लास एवं पर्व'

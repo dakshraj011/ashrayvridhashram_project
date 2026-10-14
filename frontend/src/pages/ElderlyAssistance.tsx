@@ -34,6 +34,12 @@ export const ElderlyAssistance: React.FC = () => {
       return;
     }
 
+    const cleanContact = formData.contact_number.replace(/\D/g, '');
+    if (cleanContact.length !== 10) {
+      setStatusMsg({ text: 'कृपया 10 अंकों का मान्य संपर्क मोबाइल नंबर दर्ज करें।', isError: true });
+      return;
+    }
+
     setLoading(true);
     setStatusMsg(null);
 
@@ -112,16 +118,26 @@ export const ElderlyAssistance: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-maroon dark:text-gold mb-1">
-                संपर्क नंबर *
+                संपर्क मोबाइल नंबर (10 अंक) *
               </label>
               <input
                 type="tel"
                 required
+                maxLength={10}
+                pattern="[0-9]{10}"
                 value={formData.contact_number}
-                onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
-                placeholder="मोबाइल या निकटतम फोन नंबर"
-                className="w-full px-4 py-3 rounded-xl border border-gold/40 bg-cream/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none"
+                onChange={(e) => setFormData({ ...formData, contact_number: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                placeholder="10 अंकों का संपर्क नंबर"
+                className="w-full px-4 py-3 rounded-xl border border-gold/40 bg-cream/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-saffron"
               />
+              <div className="flex justify-between items-center text-xs mt-1 px-1">
+                <span className={formData.contact_number.length === 10 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-slate-500'}>
+                  {formData.contact_number.length === 10 ? '✓ 10 अंक मान्य' : 'केवल 10 अंकों का नंबर भरें'}
+                </span>
+                <span className={`font-mono ${formData.contact_number.length === 10 ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
+                  {formData.contact_number.length}/10
+                </span>
+              </div>
             </div>
 
             <div>

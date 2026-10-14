@@ -33,6 +33,12 @@ export const VolunteerRegister: React.FC = () => {
       return;
     }
 
+    const cleanMobile = formData.mobile.replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
+      setStatusMsg({ text: 'कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।', isError: true });
+      return;
+    }
+
     setLoading(true);
     setStatusMsg(null);
 
@@ -96,16 +102,26 @@ export const VolunteerRegister: React.FC = () => {
 
             <div>
               <label className="block text-sm font-bold text-maroon dark:text-gold mb-1">
-                मोबाइल नंबर *
+                मोबाइल नंबर (10 अंक) *
               </label>
               <input
                 type="tel"
                 required
+                maxLength={10}
+                pattern="[0-9]{10}"
                 value={formData.mobile}
-                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                 placeholder="10 अंकों का मोबाइल नंबर"
-                className="w-full px-4 py-3 rounded-xl border border-gold/40 bg-cream/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gold/40 bg-cream/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-saffron"
               />
+              <div className="flex justify-between items-center text-xs mt-1 px-1">
+                <span className={formData.mobile.length === 10 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-slate-500'}>
+                  {formData.mobile.length === 10 ? '✓ 10 अंक मान्य' : 'केवल 10 अंकों का नंबर भरें'}
+                </span>
+                <span className={`font-mono ${formData.mobile.length === 10 ? 'text-emerald-600 font-bold' : 'text-slate-400'}`}>
+                  {formData.mobile.length}/10
+                </span>
+              </div>
             </div>
           </div>
 

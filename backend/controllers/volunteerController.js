@@ -1,4 +1,6 @@
 const db = require('../db/initDb');
+const VolunteerRegistration = require('../models/VolunteerRegistration');
+const { isMongoReady } = require('../db/mongoConnect');
 
 // Submit Volunteer Application
 const registerVolunteer = async (req, res) => {
@@ -12,13 +14,42 @@ const registerVolunteer = async (req, res) => {
       });
     }
 
+    const cleanMobile = (mobile || '').toString().trim().replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
+      return res.status(400).json({
+        success: false,
+        message: 'कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।'
+      });
+    }
+
     const userId = req.user ? req.user.id : 0;
 
     const result = await db.query(
       `INSERT INTO volunteer_registrations (user_id, full_name, mobile, email, address, preferred_date, help_type, message, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'लंबित')`,
-      [userId, full_name, mobile, email || null, address || '', preferred_date, help_type, message || '']
+      [userId, full_name, cleanMobile, email || null, address || '', preferred_date, help_type, message || '']
     );
+
+    // Save to MongoDB collection if connected
+    if (isMongoReady()) {
+      try {
+        await VolunteerRegistration.create({
+          full_name,
+          mobile: cleanMobile,
+          email: email || null,
+          address: address || '',
+          preferred_date,
+          help_type,
+          message: message || '',
+          status: 'लंबित',
+          user_id: userId,
+          legacy_id: result.insertId
+        });
+        console.log(`🍃 [MongoDB] Volunteer registration saved to MongoDB: ${full_name} (${cleanMobile}) - ${help_type}`);
+      } catch (mongoErr) {
+        console.warn('⚠️ [MongoDB] Volunteer save notice:', mongoErr.message);
+      }
+    }
 
     if (userId > 0) {
       await db.query(

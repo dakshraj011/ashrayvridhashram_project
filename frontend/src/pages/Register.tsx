@@ -28,8 +28,8 @@ export const Register: React.FC = () => {
       return;
     }
 
-    if (formData.mobile.length < 10) {
-      setErrorMsg('कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।');
+    if (!/^[0-9]{10}$/.test(formData.mobile)) {
+      setErrorMsg('कृपया केवल 10 अंकों का मान्य मोबाइल नंबर दर्ज करें (उदा: 9876543210)।');
       return;
     }
 
@@ -113,8 +113,10 @@ export const Register: React.FC = () => {
                 <input
                   type="tel"
                   required
+                  maxLength={10}
+                  pattern="[0-9]{10}"
                   value={formData.mobile}
-                  onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                   placeholder="10 अंकों का मोबाइल नंबर"
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gold/40 bg-cream/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-saffron"
                 />

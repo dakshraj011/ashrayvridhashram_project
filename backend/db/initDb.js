@@ -14,11 +14,39 @@ const db = {
 
   async init() {
     const preferredDriver = (process.env.DB_DRIVER || '').toLowerCase();
-    const dbHost = process.env.DB_HOST || 'localhost';
-    const dbUser = process.env.DB_USER || 'root';
-    const dbPassword = process.env.DB_PASSWORD || '';
-    const dbName = process.env.DB_NAME || 'aashray_db';
-    const dbPort = parseInt(process.env.DB_PORT || '3306', 10);
+    
+    // Check if DATABASE_URL or individual DB params are present
+    const rawUri = process.env.DATABASE_URL || process.env.MYSQL_URL || '';
+    let dbHost = process.env.DB_HOST || '';
+    let dbUser = process.env.DB_USER || 'root';
+    let dbPassword = process.env.DB_PASSWORD || '';
+    let dbName = process.env.DB_NAME || 'aashray_db';
+    let dbPort = parseInt(process.env.DB_PORT || '3306', 10);
+    let useSsl = process.env.DB_SSL === 'true';
+
+    if (rawUri) {
+      try {
+        const parsed = new URL(rawUri);
+        dbHost = parsed.hostname;
+        dbPort = parseInt(parsed.port || '3306', 10);
+        dbUser = decodeURIComponent(parsed.username || 'root');
+        dbPassword = decodeURIComponent(parsed.password || '');
+        dbName = (parsed.pathname || '/aashray_db').replace(/^\//, '') || 'aashray_db';
+        if (parsed.searchParams.has('ssl-mode') || parsed.searchParams.has('ssl') || rawUri.includes('aivencloud.com')) {
+          useSsl = true;
+        }
+      } catch (err) {
+        console.warn('⚠️ [DB] Could not parse DATABASE_URL, using individual parameters:', err.message);
+      }
+    }
+
+    if (!dbHost) {
+      dbHost = 'localhost';
+    }
+
+    if (dbHost.includes('aivencloud.com') || (dbHost !== 'localhost' && dbHost !== '127.0.0.1')) {
+      useSsl = true;
+    }
 
     // If explicit sqlite driver requested, skip MySQL
     if (preferredDriver === 'sqlite') {
@@ -30,24 +58,33 @@ const db = {
       return;
     }
 
-    // Try connecting to MySQL first
+    // Try connecting to MySQL
     try {
-      console.log(`[DB] Attempting MySQL connection to ${dbHost}:${dbPort}/${dbName}...`);
+      console.log(`[DB] Attempting MySQL connection to ${dbHost}:${dbPort}/${dbName} (SSL: ${useSsl ? 'Enabled' : 'Disabled'})...`);
       
-      // First attempt database creation if needed with short connectTimeout
-      const tempConn = await mysql.createConnection({
+      const connConfig = {
         host: dbHost,
         user: dbUser,
         password: dbPassword,
         port: dbPort,
-        connectTimeout: 4000
-      });
+        connectTimeout: 8000
+      };
 
-      await tempConn.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
-      await tempConn.end();
+      if (useSsl) {
+        connConfig.ssl = { rejectUnauthorized: false };
+      }
+
+      // Try database creation if permissions allow
+      try {
+        const tempConn = await mysql.createConnection(connConfig);
+        await tempConn.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
+        await tempConn.end();
+      } catch (createDbErr) {
+        // Cloud instances like Aiven restrict CREATE DATABASE, which is normal for dedicated pre-made databases
+      }
 
       // Create pool with database
-      mysqlPool = mysql.createPool({
+      const poolConfig = {
         host: dbHost,
         user: dbUser,
         password: dbPassword,
@@ -56,12 +93,18 @@ const db = {
         waitForConnections: true,
         connectionLimit: 10,
         queueLimit: 0,
-        connectTimeout: 4000
-      });
+        connectTimeout: 8000
+      };
+
+      if (useSsl) {
+        poolConfig.ssl = { rejectUnauthorized: false };
+      }
+
+      mysqlPool = mysql.createPool(poolConfig);
 
       // Test pool connection
       const connection = await mysqlPool.getConnection();
-      console.log('✅ [DB] Successfully connected to MySQL database!');
+      console.log('✅ [DB] Successfully connected to MySQL cloud database!');
       connection.release();
 
       dbDriver = 'mysql';

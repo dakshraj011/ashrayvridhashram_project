@@ -10,7 +10,7 @@ import type {
   Event, ContactSubmission, DashboardStats
 } from '../types';
 import {
-  Plus, Search, Edit, Trash2, Send, Download, UserPlus, Lock, KeyRound
+  Plus, Search, Edit, Trash2, Send, Download, Lock, KeyRound
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -23,7 +23,7 @@ export const AdminDashboard: React.FC = () => {
   const [verifyingPwd, setVerifyingPwd] = useState<boolean>(false);
 
   const [activeTab, setActiveTab] = useState<
-    'stats' | 'users' | 'managers' | 'meals' | 'volunteers' | 'assistance' | 'needs' | 'events' | 'contacts' | 'announcement' | 'reports'
+    'stats' | 'users' | 'meals' | 'volunteers' | 'assistance' | 'needs' | 'events' | 'contacts' | 'announcement' | 'reports'
   >('stats');
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -76,15 +76,7 @@ export const AdminDashboard: React.FC = () => {
     onConfirm: () => void;
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
-  // Add Manager Form State
-  const [showAddManager, setShowAddManager] = useState(false);
-  const [newManager, setNewManager] = useState({
-    name: '',
-    mobile: '',
-    email: '',
-    password: '',
-    address: ''
-  });
+
 
   // Add/Edit Need State
   const [showNeedModal, setShowNeedModal] = useState(false);
@@ -188,21 +180,7 @@ export const AdminDashboard: React.FC = () => {
     });
   };
 
-  // Manager Actions
-  const handleAddManager = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await api.post('/admin/managers', newManager);
-      if (res.data.success) {
-        showNotification('नया प्रबंधक खाता बनाया गया!');
-        setShowAddManager(false);
-        setNewManager({ name: '', mobile: '', email: '', password: '', address: '' });
-        fetchDashboardData();
-      }
-    } catch (err: any) {
-      showNotification(err.response?.data?.message || 'प्रबंधक जोड़ने में विफलता।');
-    }
-  };
+
 
   // Meal Status Action
   const handleUpdateMealStatus = async (id: number, status: string, note?: string) => {
@@ -538,14 +516,6 @@ export const AdminDashboard: React.FC = () => {
           उपयोगकर्ता ({usersList.length})
         </button>
         <button
-          onClick={() => setActiveTab('managers')}
-          className={`px-4 py-2 rounded-xl font-bold text-sm transition-all cursor-pointer ${
-            activeTab === 'managers' ? 'bg-maroon text-gold shadow' : 'bg-cream dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-          }`}
-        >
-          प्रबंधक ({managersList.length})
-        </button>
-        <button
           onClick={() => setActiveTab('meals')}
           className={`px-4 py-2 rounded-xl font-bold text-sm transition-all cursor-pointer ${
             activeTab === 'meals' ? 'bg-maroon text-gold shadow' : 'bg-cream dark:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -621,8 +591,8 @@ export const AdminDashboard: React.FC = () => {
             <h3 className="text-3xl font-extrabold text-saffron">{stats?.totalUsers || 0}</h3>
           </div>
           <div className="card-krishna space-y-2 border-l-4 border-maroon">
-            <p className="text-xs text-slate-500 font-bold">कुल आश्रम प्रबंधक</p>
-            <h3 className="text-3xl font-extrabold text-maroon dark:text-gold">{stats?.totalManagers || 0}</h3>
+            <p className="text-xs text-slate-500 font-bold">आश्रम आवश्यकताएं (Needs)</p>
+            <h3 className="text-3xl font-extrabold text-maroon dark:text-gold">{needsList.length}</h3>
           </div>
           <div className="card-krishna space-y-2 border-l-4 border-gold">
             <p className="text-xs text-slate-500 font-bold">कुल भोजन प्रायोजन (लंबित)</p>
@@ -714,120 +684,6 @@ export const AdminDashboard: React.FC = () => {
                       </td>
                     </tr>
                   ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : activeTab === 'managers' ? (
-        /* MANAGER MANAGEMENT */
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-bold text-maroon dark:text-gold font-heading">
-              वृद्धाश्रम प्रबंधक सूची एवं नया प्रबंधक खाता
-            </h3>
-            <button
-              onClick={() => setShowAddManager(!showAddManager)}
-              className="btn-secondary text-sm py-2 px-4 flex items-center gap-2"
-            >
-              <UserPlus className="w-4 h-4" /> नया प्रबंधक जोड़ें
-            </button>
-          </div>
-
-          {showAddManager && (
-            <form onSubmit={handleAddManager} className="card-krishna space-y-4 border-2 border-maroon">
-              <h4 className="text-xl font-bold text-maroon dark:text-gold font-heading">नया प्रबंधक खाता बनाएं</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-maroon dark:text-gold mb-1">नाम *</label>
-                  <input
-                    type="text"
-                    required
-                    value={newManager.name}
-                    onChange={(e) => setNewManager({ ...newManager, name: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl bg-cream/50 dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-maroon dark:text-gold mb-1">मोबाइल नंबर *</label>
-                  <input
-                    type="tel"
-                    required
-                    value={newManager.mobile}
-                    onChange={(e) => setNewManager({ ...newManager, mobile: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl bg-cream/50 dark:bg-slate-800"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-bold text-maroon dark:text-gold mb-1">ईमेल</label>
-                  <input
-                    type="email"
-                    value={newManager.email}
-                    onChange={(e) => setNewManager({ ...newManager, email: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl bg-cream/50 dark:bg-slate-800"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-maroon dark:text-gold mb-1">पासवर्ड *</label>
-                  <input
-                    type="password"
-                    required
-                    value={newManager.password}
-                    onChange={(e) => setNewManager({ ...newManager, password: e.target.value })}
-                    className="w-full p-2.5 border rounded-xl bg-cream/50 dark:bg-slate-800"
-                  />
-                </div>
-              </div>
-              <div className="flex gap-2 justify-end">
-                <button type="button" onClick={() => setShowAddManager(false)} className="px-4 py-2 font-bold text-slate-600">रद्द करें</button>
-                <button type="submit" className="btn-secondary text-sm py-2 px-6">प्रबंधक बनाएं</button>
-              </div>
-            </form>
-          )}
-
-          <div className="overflow-x-auto rounded-2xl border border-gold/40 bg-white dark:bg-slate-900 shadow">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-maroon/10 text-maroon dark:text-gold font-bold">
-                <tr>
-                  <th className="p-3">आईडी</th>
-                  <th className="p-3">प्रबंधक नाम</th>
-                  <th className="p-3">मोबाइल</th>
-                  <th className="p-3">ईमेल</th>
-                  <th className="p-3">स्थिति</th>
-                  <th className="p-3 text-right">कार्रवाई</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {managersList.map((m) => (
-                  <tr key={m.id} className="hover:bg-cream/40 dark:hover:bg-slate-800">
-                    <td className="p-3 font-bold">#{m.id}</td>
-                    <td className="p-3 font-bold text-slate-900 dark:text-slate-100">{m.name}</td>
-                    <td className="p-3 font-semibold">{m.mobile}</td>
-                    <td className="p-3 text-xs">{m.email || '-'}</td>
-                    <td className="p-3">
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                        m.is_active === 1 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                      }`}>
-                        {m.is_active === 1 ? 'सक्रिय' : 'निष्क्रिय'}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right space-x-2">
-                      <button
-                        onClick={() => handleToggleUserActive(m.id, m.is_active || 1)}
-                        className="px-2.5 py-1 bg-amber-500 text-white rounded font-bold text-xs cursor-pointer"
-                      >
-                        {m.is_active === 1 ? 'निष्क्रिय करें' : 'सक्रिय करें'}
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(m.id, m.name)}
-                        className="px-2.5 py-1 bg-rose-600 text-white rounded font-bold text-xs cursor-pointer"
-                      >
-                        हटाएं
-                      </button>
-                    </td>
-                  </tr>
-                ))}
               </tbody>
             </table>
           </div>

