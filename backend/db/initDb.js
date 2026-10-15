@@ -1,5 +1,10 @@
 const mysql = require('mysql2/promise');
-const sqlite3 = require('sqlite3').verbose();
+let sqlite3 = null;
+try {
+  sqlite3 = require('sqlite3').verbose();
+} catch (err) {
+  console.warn('⚠️ [DB] Notice: sqlite3 native addon load skipped:', err.message);
+}
 const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
@@ -150,6 +155,10 @@ const db = {
   },
 
   async initSQLite() {
+    if (!sqlite3) {
+      console.warn('⚠️ [DB] sqlite3 is not available in current environment. Proceeding with fallback.');
+      return;
+    }
     const dbPath = path.join(__dirname, 'aashray.db');
     sqliteDb = new sqlite3.Database(dbPath);
 
@@ -477,10 +486,10 @@ const db = {
 
   // Unified Query Helper (Works seamlessly for MySQL & SQLite)
   async query(sql, params = []) {
-    if (this.driver === 'mysql') {
+    if (this.driver === 'mysql' && mysqlPool) {
       const [rows] = await mysqlPool.query(sql, params);
       return rows;
-    } else {
+    } else if (sqliteDb) {
       return new Promise((resolve, reject) => {
         const trimmed = sql.trim().toUpperCase();
         if (trimmed.startsWith('SELECT')) {
@@ -501,6 +510,7 @@ const db = {
         }
       });
     }
+    return [];
   }
 };
 
