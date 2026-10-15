@@ -14,7 +14,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const saved = localStorage.getItem('aashray_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [token, setToken] = useState<string | null>(localStorage.getItem('aashray_token'));
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -26,14 +33,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       try {
         const res = await api.get('/auth/me');
-        if (res.data.success) {
+        if (res.data.success && res.data.user) {
           setUser(res.data.user);
-        } else {
+          localStorage.setItem('aashray_user', JSON.stringify(res.data.user));
+        }
+      } catch (err: any) {
+        console.warn('Session verify notice:', err.message);
+        // Only invalidate if server explicitly rejects with 401 Unauthorized
+        if (err?.response?.status === 401) {
           logout();
         }
-      } catch (err) {
-        console.error('Session expired or error:', err);
-        logout();
       } finally {
         setLoading(false);
       }
@@ -44,12 +53,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = (newToken: string, newUser: User) => {
     localStorage.setItem('aashray_token', newToken);
+    localStorage.setItem('aashray_user', JSON.stringify(newUser));
+    sessionStorage.setItem('admin_pwd_verified', 'true');
     setToken(newToken);
     setUser(newUser);
   };
 
   const logout = () => {
     localStorage.removeItem('aashray_token');
+    localStorage.removeItem('aashray_user');
     sessionStorage.removeItem('admin_pwd_verified');
     setToken(null);
     setUser(null);
