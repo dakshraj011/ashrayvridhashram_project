@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -17,16 +17,7 @@ import { Register } from './pages/Register';
 import { MealSponsorship } from './pages/MealSponsorship';
 import { VolunteerRegister } from './pages/VolunteerRegister';
 import { ElderlyAssistance } from './pages/ElderlyAssistance';
-import { UserDashboard } from './pages/UserDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
-
-// Route Guards
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="text-center py-20 text-saffron font-bold text-xl">लोड हो रहा है...</div>;
-  if (!user) return <Navigate to="/login" replace state={{ redirectMsg: 'सुरक्षा हेतु कृपया पहले लॉगिन करें।' }} />;
-  return <>{children}</>;
-};
 
 export const AppContent: React.FC = () => {
   return (
@@ -51,8 +42,8 @@ export const AppContent: React.FC = () => {
           <Route path="/volunteer-register" element={<VolunteerRegister />} />
           <Route path="/elderly-assistance" element={<ElderlyAssistance />} />
 
-          {/* Role Dashboards */}
-          <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
+          {/* Admin & Dashboards (all direct to /admin) */}
+          <Route path="/dashboard" element={<Navigate to="/admin" replace />} />
           <Route path="/manager" element={<Navigate to="/admin" replace />} />
           <Route path="/admin" element={<AdminDashboard />} />
 

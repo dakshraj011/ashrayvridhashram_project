@@ -43,7 +43,7 @@ export const Footer: React.FC = () => {
             <li><Link to="/meal-sponsorship" className="hover:text-gold transition-colors">भोजन प्रायोजन फॉर्म</Link></li>
             <li><Link to="/volunteer-register" className="hover:text-gold transition-colors">स्वयंसेवक पंजीकरण</Link></li>
             <li><Link to="/elderly-assistance" className="hover:text-gold transition-colors">बुजुर्ग सहायता अनुरोध</Link></li>
-            <li><Link to="/login" className="hover:text-gold transition-colors font-bold text-gold">प्रशासक लॉगिन (Admin Panel)</Link></li>
+            <li><Link to="/admin" className="hover:text-gold transition-colors font-bold text-gold">व्यवस्थापक डैशबोर्ड (Admin Dashboard)</Link></li>
           </ul>
         </div>
 

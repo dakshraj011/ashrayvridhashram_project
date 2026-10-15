@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { PeacockFeatherIcon, AashrayLogo } from './KrishnaAccents';
 import { NotificationBell } from './NotificationBell';
-import { Sun, Moon, Menu, X, LogOut, ShieldCheck, Lock, User as UserIcon } from 'lucide-react';
+import { Sun, Moon, Menu, X, LogOut, ShieldCheck } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -76,6 +76,12 @@ export const Navbar: React.FC = () => {
             >
               संपर्क करें
             </Link>
+            <Link
+              to="/admin"
+              className={`hover:text-saffron transition-colors py-1 ${isActive('/admin') ? 'text-saffron font-bold border-b-2 border-saffron' : ''}`}
+            >
+              व्यवस्थापक डैशबोर्ड
+            </Link>
           </nav>
 
           {/* Right Action Icons & Auth */}
@@ -83,7 +89,7 @@ export const Navbar: React.FC = () => {
             {/* Dark Mode Toggle */}
             <button
               onClick={toggleDarkMode}
-              className="p-2.5 rounded-xl bg-amber-100 dark:bg-slate-800 text-maroon dark:text-gold hover:scale-105 transition-transform"
+              className="p-2.5 rounded-xl bg-amber-100 dark:bg-slate-800 text-maroon dark:text-gold hover:scale-105 transition-transform cursor-pointer"
               title={darkMode ? "लाइट मोड" : "डार्क मोड"}
             >
               {darkMode ? <Sun className="w-5 h-5 text-gold" /> : <Moon className="w-5 h-5 text-maroon" />}
@@ -91,32 +97,23 @@ export const Navbar: React.FC = () => {
 
             {user && <NotificationBell />}
 
-            {user ? (
-              <>
-                {/* Dashboard Nav Button by Role */}
-                {user.role === 'admin' ? (
-                  <Link to="/admin" className="btn-secondary text-sm py-2 px-4 font-bold flex items-center gap-1.5 shadow-md">
-                    <ShieldCheck className="w-4 h-4" /> व्यवस्थापक पैनल (Admin)
-                  </Link>
-                ) : (
-                  <Link to="/dashboard" className="btn-secondary text-sm py-2 px-4 font-bold flex items-center gap-1.5 shadow-md">
-                    <UserIcon className="w-4 h-4" /> मेरा डैशबोर्ड (Dashboard)
-                  </Link>
-                )}
+            <Link
+              to="/admin"
+              className="btn-secondary text-sm py-2 px-4 font-bold flex items-center gap-1.5 shadow-md hover:scale-105 transition-all cursor-pointer"
+              title="व्यवस्थापक डैशबोर्ड (Admin Dashboard)"
+            >
+              <ShieldCheck className="w-4 h-4 text-gold" />
+              व्यवस्थापक डैशबोर्ड (Admin)
+            </Link>
 
-                <button
-                  onClick={handleLogout}
-                  className="p-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl font-bold transition-colors flex items-center gap-1 text-sm"
-                  title="लॉग आउट करें"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </>
-            ) : (
-              <Link to="/admin" className="btn-secondary text-sm py-2 px-4 font-bold flex items-center gap-1.5 shadow-md">
-                <Lock className="w-4 h-4" />
-                व्यवस्थापक पैनल (Admin)
-              </Link>
+            {user && (
+              <button
+                onClick={handleLogout}
+                className="p-2.5 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl font-bold transition-colors flex items-center gap-1 text-sm cursor-pointer"
+                title="लॉग आउट करें"
+              >
+                <LogOut className="w-5 h-5" />
+              </button>
             )}
           </div>
 
@@ -177,33 +174,27 @@ export const Navbar: React.FC = () => {
           >
             संपर्क करें
           </Link>
+          <Link
+            to="/admin"
+            onClick={() => setIsMenuOpen(false)}
+            className="block py-2 text-saffron dark:text-gold font-bold"
+          >
+            व्यवस्थापक डैशबोर्ड
+          </Link>
 
           <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
-            {user ? (
-              <>
-                <div className="p-2 bg-saffron/10 rounded-xl">
-                  <p className="text-xs text-slate-500">लॉगिन उपयोगकर्ता:</p>
-                  <p className="font-bold text-maroon dark:text-gold">{user.name}</p>
-                </div>
-                {user.role === 'admin' && (
-                  <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="btn-secondary w-full text-center text-sm py-2">
-                    व्यवस्थापक पैनल (Admin)
-                  </Link>
-                )}
-                {user.role === 'user' && (
-                  <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="btn-secondary w-full text-center text-sm py-2">
-                    मेरा डैशबोर्ड (User Dashboard)
-                  </Link>
-                )}
-                <button onClick={handleLogout} className="w-full text-center py-2 text-rose-600 font-bold">
-                  लॉग आउट करें
-                </button>
-              </>
-            ) : (
-              <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="btn-secondary w-full text-center text-sm py-2.5 flex items-center justify-center gap-2">
-                <Lock className="w-4 h-4" />
-                व्यवस्थापक पैनल (Admin)
-              </Link>
+            <Link
+              to="/admin"
+              onClick={() => setIsMenuOpen(false)}
+              className="btn-secondary w-full text-center text-sm py-2.5 flex items-center justify-center gap-2"
+            >
+              <ShieldCheck className="w-4 h-4 text-gold" />
+              व्यवस्थापक डैशबोर्ड (Admin Dashboard)
+            </Link>
+            {user && (
+              <button onClick={handleLogout} className="w-full text-center py-2 text-rose-600 font-bold cursor-pointer">
+                लॉग आउट करें
+              </button>
             )}
           </div>
         </div>

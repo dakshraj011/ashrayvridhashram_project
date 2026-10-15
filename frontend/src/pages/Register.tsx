@@ -52,7 +52,7 @@ export const Register: React.FC = () => {
 
       if (res.data.success) {
         login(res.data.token, res.data.user);
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (err: any) {
       setErrorMsg(err.response?.data?.message || 'पंजीकरण में विफलता हुई।');
