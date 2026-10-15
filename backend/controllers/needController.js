@@ -20,8 +20,27 @@ const getNeeds = async (req, res) => {
 
     sql += ' ORDER BY created_at DESC';
 
-    const needs = await db.query(sql, params);
-    res.json({ success: true, count: needs.length, needs });
+    let needs = await db.query(sql, params).catch(() => []);
+    if ((!needs || needs.length === 0) && isMongoReady()) {
+      try {
+        const mNeeds = await Need.find().sort({ createdAt: -1 }).lean();
+        if (mNeeds && mNeeds.length > 0) {
+          needs = mNeeds.map(n => ({
+            id: n._id,
+            title: n.title,
+            category: n.category,
+            description: n.description,
+            required_quantity: n.requiredQuantity,
+            available_quantity: n.availableQuantity,
+            unit: n.unit,
+            photo_url: n.photoUrl,
+            status: n.status,
+            created_at: n.createdAt
+          }));
+        }
+      } catch (e) {}
+    }
+    res.json({ success: true, count: needs ? needs.length : 0, needs: needs || [] });
   } catch (error) {
     res.status(500).json({ success: false, message: 'आवश्यकताएँ लोड करने में विफलता: ' + error.message });
   }

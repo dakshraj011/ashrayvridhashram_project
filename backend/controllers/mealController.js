@@ -144,8 +144,27 @@ const getAllMealRequests = async (req, res) => {
 
     sql += ` ORDER BY m.created_at DESC`;
 
-    const requests = await db.query(sql, params);
-    res.json({ success: true, count: requests.length, requests });
+    let requests = await db.query(sql, params).catch(() => []);
+    if ((!requests || requests.length === 0) && isMongoReady()) {
+      try {
+        const mReqs = await MealRequest.find().sort({ createdAt: -1 }).lean();
+        if (mReqs && mReqs.length > 0) {
+          requests = mReqs.map(m => ({
+            id: m._id,
+            user_name: m.userName,
+            mobile: m.mobile,
+            preferred_date: m.preferredDate,
+            people_count: m.peopleCount,
+            meal_type: m.mealType,
+            items_distributed: m.itemsDistributed || 'सात्विक भोजन',
+            message: m.message,
+            status: m.status,
+            created_at: m.createdAt
+          }));
+        }
+      } catch (e) {}
+    }
+    res.json({ success: true, count: requests ? requests.length : 0, requests: requests || [] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

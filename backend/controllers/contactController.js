@@ -59,8 +59,25 @@ const submitContact = async (req, res) => {
 // Get All Contact Submissions (Admin)
 const getContacts = async (req, res) => {
   try {
-    const messages = await db.query('SELECT * FROM contact_submissions ORDER BY created_at DESC');
-    res.json({ success: true, count: messages.length, messages });
+    let messages = await db.query('SELECT * FROM contact_submissions ORDER BY created_at DESC').catch(() => []);
+    if ((!messages || messages.length === 0) && isMongoReady()) {
+      try {
+        const mMsgs = await ContactSubmission.find().sort({ createdAt: -1 }).lean();
+        if (mMsgs && mMsgs.length > 0) {
+          messages = mMsgs.map(c => ({
+            id: c._id,
+            name: c.name,
+            mobile: c.mobile,
+            email: c.email,
+            subject: c.subject,
+            message: c.message,
+            status: c.status,
+            created_at: c.createdAt
+          }));
+        }
+      } catch (e) {}
+    }
+    res.json({ success: true, count: messages ? messages.length : 0, messages: messages || [] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

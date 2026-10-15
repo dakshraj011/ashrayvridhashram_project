@@ -30,6 +30,7 @@ export const Login: React.FC = () => {
       // Direct Admin login via password (e.g. radhe radhe)
       const res = await api.post('/auth/login', { password: password.trim() });
       if (res.data.success) {
+        sessionStorage.setItem('admin_pwd_verified', 'true');
         login(res.data.token, res.data.user);
         navigate('/admin');
       }

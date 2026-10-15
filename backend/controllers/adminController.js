@@ -1,39 +1,84 @@
 const bcrypt = require('bcryptjs');
 const db = require('../db/initDb');
 
+const { isMongoReady } = require('../db/mongoConnect');
+const MealRequest = require('../models/MealRequest');
+const VolunteerRegistration = require('../models/VolunteerRegistration');
+const AssistanceRequest = require('../models/AssistanceRequest');
+const ContactSubmission = require('../models/ContactSubmission');
+const Need = require('../models/Need');
+
+const safeCnt = (arr) => (Array.isArray(arr) && arr.length > 0 && arr[0]?.cnt != null) ? Number(arr[0].cnt) : 0;
+
 // Get Real-time Dashboard Statistics
 const getDashboardStats = async (req, res) => {
   try {
-    const userCount = await db.query(`SELECT COUNT(*) as cnt FROM users WHERE role = 'user'`);
-    const managerCount = await db.query(`SELECT COUNT(*) as cnt FROM users WHERE role = 'manager'`);
-    
-    const mealTotal = await db.query(`SELECT COUNT(*) as cnt FROM meal_requests`);
-    const mealPending = await db.query(`SELECT COUNT(*) as cnt FROM meal_requests WHERE status = 'लंबित'`);
-    
-    const volTotal = await db.query(`SELECT COUNT(*) as cnt FROM volunteer_registrations`);
-    const volPending = await db.query(`SELECT COUNT(*) as cnt FROM volunteer_registrations WHERE status = 'लंबित'`);
+    let [
+      userCount, managerCount, mealTotal, mealPending,
+      volTotal, volPending, astTotal, astPending,
+      contactCount, needCount, eventCount
+    ] = await Promise.all([
+      db.query(`SELECT COUNT(*) as cnt FROM users WHERE role = 'user'`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM users WHERE role = 'manager'`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM meal_requests`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM meal_requests WHERE status = 'लंबित'`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM volunteer_registrations`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM volunteer_registrations WHERE status = 'लंबित'`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM assistance_requests`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM assistance_requests WHERE status = 'लंबित'`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM contact_submissions`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM needs WHERE status = 'सक्रिय'`).catch(() => []),
+      db.query(`SELECT COUNT(*) as cnt FROM events`).catch(() => [])
+    ]);
 
-    const astTotal = await db.query(`SELECT COUNT(*) as cnt FROM assistance_requests`);
-    const astPending = await db.query(`SELECT COUNT(*) as cnt FROM assistance_requests WHERE status = 'लंबित'`);
+    let totalMeals = safeCnt(mealTotal);
+    let pendingMeals = safeCnt(mealPending);
+    let totalVols = safeCnt(volTotal);
+    let pendingVols = safeCnt(volPending);
+    let totalAsts = safeCnt(astTotal);
+    let pendingAsts = safeCnt(astPending);
+    let totalContacts = safeCnt(contactCount);
+    let activeNeeds = safeCnt(needCount);
 
-    const contactCount = await db.query(`SELECT COUNT(*) as cnt FROM contact_submissions`);
-    const needCount = await db.query(`SELECT COUNT(*) as cnt FROM needs WHERE status = 'सक्रिय'`);
-    const eventCount = await db.query(`SELECT COUNT(*) as cnt FROM events`);
+    // If MongoDB is connected and has records, use MongoDB counts
+    if (isMongoReady()) {
+      try {
+        const mMeals = await MealRequest.countDocuments();
+        const mPendingMeals = await MealRequest.countDocuments({ status: 'लंबित' });
+        const mVols = await VolunteerRegistration.countDocuments();
+        const mPendingVols = await VolunteerRegistration.countDocuments({ status: 'लंबित' });
+        const mAsts = await AssistanceRequest.countDocuments();
+        const mPendingAsts = await AssistanceRequest.countDocuments({ status: 'लंबित' });
+        const mContacts = await ContactSubmission.countDocuments();
+        const mNeeds = await Need.countDocuments({ status: 'सक्रिय' });
+
+        if (mMeals > totalMeals) totalMeals = mMeals;
+        if (mPendingMeals > pendingMeals) pendingMeals = mPendingMeals;
+        if (mVols > totalVols) totalVols = mVols;
+        if (mPendingVols > pendingVols) pendingVols = mPendingVols;
+        if (mAsts > totalAsts) totalAsts = mAsts;
+        if (mPendingAsts > pendingAsts) pendingAsts = mPendingAsts;
+        if (mContacts > totalContacts) totalContacts = mContacts;
+        if (mNeeds > activeNeeds) activeNeeds = mNeeds;
+      } catch (mErr) {
+        console.warn('MongoDB stats count warning:', mErr.message);
+      }
+    }
 
     res.json({
       success: true,
       stats: {
-        totalUsers: userCount[0].cnt,
-        totalManagers: managerCount[0].cnt,
-        totalMealRequests: mealTotal[0].cnt,
-        pendingMealRequests: mealPending[0].cnt,
-        totalVolunteers: volTotal[0].cnt,
-        pendingVolunteers: volPending[0].cnt,
-        totalAssistanceRequests: astTotal[0].cnt,
-        pendingAssistanceRequests: astPending[0].cnt,
-        totalContacts: contactCount[0].cnt,
-        activeNeeds: needCount[0].cnt,
-        totalEvents: eventCount[0].cnt
+        totalUsers: safeCnt(userCount) || 1,
+        totalManagers: safeCnt(managerCount) || 1,
+        totalMealRequests: totalMeals,
+        pendingMealRequests: pendingMeals,
+        totalVolunteers: totalVols,
+        pendingVolunteers: pendingVols,
+        totalAssistanceRequests: totalAsts,
+        pendingAssistanceRequests: pendingAsts,
+        totalContacts: totalContacts,
+        activeNeeds: activeNeeds,
+        totalEvents: safeCnt(eventCount)
       }
     });
   } catch (error) {

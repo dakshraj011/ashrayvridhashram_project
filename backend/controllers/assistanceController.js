@@ -107,8 +107,27 @@ const getAllAssistanceRequests = async (req, res) => {
 
     sql += ` ORDER BY a.created_at DESC`;
 
-    const requests = await db.query(sql, params);
-    res.json({ success: true, count: requests.length, requests });
+    let requests = await db.query(sql, params).catch(() => []);
+    if ((!requests || requests.length === 0) && isMongoReady()) {
+      try {
+        const mReqs = await AssistanceRequest.find().sort({ createdAt: -1 }).lean();
+        if (mReqs && mReqs.length > 0) {
+          requests = mReqs.map(a => ({
+            id: a._id,
+            elderly_name: a.elderlyName,
+            elderly_age: a.elderlyAge,
+            contact_number: a.contactNumber,
+            address: a.address,
+            assistance_type: a.assistanceType,
+            description: a.description,
+            photo_url: a.photoUrl,
+            status: a.status,
+            created_at: a.createdAt
+          }));
+        }
+      } catch (e) {}
+    }
+    res.json({ success: true, count: requests ? requests.length : 0, requests: requests || [] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

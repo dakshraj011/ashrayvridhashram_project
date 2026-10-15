@@ -3,7 +3,6 @@ import { SectionHeader, AashrayLogo } from '../components/KrishnaAccents';
 import { StatusBadge } from '../components/StatusBadge';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { ImageUploader } from '../components/ImageUploader';
-import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import type {
   User, Need, MealRequest, VolunteerRegistration, AssistanceRequest,
@@ -14,7 +13,6 @@ import {
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
-  const { user } = useAuth();
   const [isPasswordVerified, setIsPasswordVerified] = useState<boolean>(() => {
     return sessionStorage.getItem('admin_pwd_verified') === 'true';
   });
@@ -48,8 +46,7 @@ export const AdminDashboard: React.FC = () => {
     setPwdError('');
 
     try {
-      const mobile = user?.mobile || '6306638958';
-      const res = await api.post('/auth/login', { mobile, password: adminPasswordInput });
+      const res = await api.post('/auth/login', { password: adminPasswordInput.trim() });
       if (res.data.success && res.data.user.role === 'admin') {
         sessionStorage.setItem('admin_pwd_verified', 'true');
         setIsPasswordVerified(true);

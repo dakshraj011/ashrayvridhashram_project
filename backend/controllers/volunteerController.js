@@ -99,8 +99,27 @@ const getAllVolunteers = async (req, res) => {
 
     sql += ` ORDER BY created_at DESC`;
 
-    const registrations = await db.query(sql, params);
-    res.json({ success: true, count: registrations.length, registrations });
+    let registrations = await db.query(sql, params).catch(() => []);
+    if ((!registrations || registrations.length === 0) && isMongoReady()) {
+      try {
+        const mRegs = await VolunteerRegistration.find().sort({ createdAt: -1 }).lean();
+        if (mRegs && mRegs.length > 0) {
+          registrations = mRegs.map(v => ({
+            id: v._id,
+            full_name: v.fullName,
+            mobile: v.mobile,
+            email: v.email,
+            address: v.address,
+            preferred_date: v.preferredDate,
+            help_type: v.helpType,
+            message: v.message,
+            status: v.status,
+            created_at: v.createdAt
+          }));
+        }
+      } catch (e) {}
+    }
+    res.json({ success: true, count: registrations ? registrations.length : 0, registrations: registrations || [] });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

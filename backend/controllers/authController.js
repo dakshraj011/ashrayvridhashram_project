@@ -85,41 +85,78 @@ const login = async (req, res) => {
 
     const trimmedPassword = password.toString().trim();
 
-    // 1. Direct Admin Login via password 'radhe radhe' (no phone required)
-    if (!mobile || trimmedPassword.toLowerCase() === 'radhe radhe') {
-      const adminUsers = await db.query(`SELECT * FROM users WHERE role = 'admin' LIMIT 1`);
-      if (adminUsers && adminUsers.length > 0) {
-        const admin = adminUsers[0];
-        const isMatch = (trimmedPassword.toLowerCase() === 'radhe radhe') || await bcrypt.compare(trimmedPassword, admin.password);
-        if (isMatch) {
-          const token = jwt.sign(
-            { id: admin.id, name: admin.name, mobile: admin.mobile, role: 'admin', email: admin.email || '' },
-            process.env.JWT_SECRET || 'aashray_krishna_prem_jwt_secret_key_2026_super_secure',
-            { expiresIn: '7d' }
-          );
-
-          return res.json({
-            success: true,
-            message: 'प्रशासक लॉगिन सफल! जय श्री कृष्णा।',
-            token,
-            user: {
-              id: admin.id,
-              name: admin.name,
-              email: admin.email,
-              mobile: admin.mobile,
-              role: 'admin',
-              address: admin.address
-            }
-          });
+    // 1. Direct Master Admin Login via password 'radhe radhe' (Single-Password Admin Access)
+    if (trimmedPassword.toLowerCase() === 'radhe radhe') {
+      let admin = null;
+      try {
+        const adminUsers = await db.query(`SELECT * FROM users WHERE role = 'admin' LIMIT 1`);
+        if (adminUsers && adminUsers.length > 0) {
+          admin = adminUsers[0];
         }
+      } catch (e) {
+        console.warn('Admin fetch fallback:', e.message);
       }
 
-      if (!mobile) {
-        return res.status(401).json({
-          success: false,
-          message: 'गलत पासवर्ड! कृपया सही सुरक्षा पासवर्ड (radhe radhe) दर्ज करें।'
-        });
+      if (!admin) {
+        admin = {
+          id: 1,
+          name: 'मुख्य प्रशासक (Admin)',
+          email: 'admin@aashray.org',
+          mobile: '6306638958',
+          role: 'admin',
+          address: 'आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)'
+        };
       }
+
+      const token = jwt.sign(
+        { id: admin.id, name: admin.name, mobile: admin.mobile, role: 'admin', email: admin.email || '' },
+        process.env.JWT_SECRET || 'aashray_krishna_prem_jwt_secret_key_2026_super_secure',
+        { expiresIn: '7d' }
+      );
+
+      return res.json({
+        success: true,
+        message: 'प्रशासक लॉगिन सफल! जय श्री कृष्णा।',
+        token,
+        user: {
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+          mobile: admin.mobile,
+          role: 'admin',
+          address: admin.address
+        }
+      });
+    }
+
+    // Direct password login without mobile
+    if (!mobile) {
+      try {
+        const adminUsers = await db.query(`SELECT * FROM users WHERE role = 'admin'`);
+        if (adminUsers && adminUsers.length > 0) {
+          for (const a of adminUsers) {
+            const isMatch = await bcrypt.compare(trimmedPassword, a.password);
+            if (isMatch) {
+              const token = jwt.sign(
+                { id: a.id, name: a.name, mobile: a.mobile, role: 'admin', email: a.email || '' },
+                process.env.JWT_SECRET || 'aashray_krishna_prem_jwt_secret_key_2026_super_secure',
+                { expiresIn: '7d' }
+              );
+              return res.json({
+                success: true,
+                message: 'प्रशासक लॉगिन सफल! जय श्री कृष्णा।',
+                token,
+                user: { id: a.id, name: a.name, email: a.email, mobile: a.mobile, role: 'admin', address: a.address }
+              });
+            }
+          }
+        }
+      } catch (e) {}
+
+      return res.status(401).json({
+        success: false,
+        message: 'गलत पासवर्ड! कृपया सही सुरक्षा पासवर्ड (radhe radhe) दर्ज करें।'
+      });
     }
 
     // 2. Mobile + Password Login fallback
