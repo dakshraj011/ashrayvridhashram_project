@@ -60,24 +60,40 @@ const submitContact = async (req, res) => {
 const getContacts = async (req, res) => {
   try {
     let messages = await db.query('SELECT * FROM contact_submissions ORDER BY created_at DESC').catch(() => []);
-    if ((!messages || messages.length === 0) && isMongoReady()) {
+    if (!Array.isArray(messages)) messages = [];
+
+    if (isMongoReady()) {
       try {
         const mMsgs = await ContactSubmission.find().sort({ createdAt: -1 }).lean();
         if (mMsgs && mMsgs.length > 0) {
-          messages = mMsgs.map(c => ({
+          const mongoList = mMsgs.map(c => ({
             id: c._id,
-            name: c.name,
-            mobile: c.mobile,
-            email: c.email,
-            subject: c.subject,
-            message: c.message,
-            status: c.status,
-            created_at: c.createdAt
+            name: c.name || '',
+            mobile: c.mobile || '',
+            email: c.email || '',
+            subject: c.subject || 'सामान्य पूछताछ',
+            message: c.message || '',
+            status: c.status || 'अपठित',
+            created_at: c.createdAt || new Date().toISOString()
           }));
+
+          const seen = new Set(messages.map(m => `${m.mobile}_${(m.message || '').substring(0, 15)}`));
+          for (const cItem of mongoList) {
+            const key = `${cItem.mobile}_${(cItem.message || '').substring(0, 15)}`;
+            if (!seen.has(key)) {
+              messages.push(cItem);
+              seen.add(key);
+            }
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Mongo contact merge notice:', e.message);
+      }
     }
-    res.json({ success: true, count: messages ? messages.length : 0, messages: messages || [] });
+
+    messages.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    res.json({ success: true, count: messages.length, messages });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -89,7 +105,21 @@ const updateContactStatus = async (req, res) => {
     const { id } = req.params;
     const { status } = req.body; // 'अपठित', 'पठित', 'हल किया गया'
 
-    await db.query('UPDATE contact_submissions SET status = ? WHERE id = ?', [status, id]);
+    await db.query('UPDATE contact_submissions SET status = ? WHERE id = ?', [status, id]).catch(() => {});
+
+    if (isMongoReady()) {
+      try {
+        if (typeof id === 'string' && id.length === 24) {
+          await ContactSubmission.findByIdAndUpdate(id, { $set: { status } });
+        } else {
+          await ContactSubmission.updateOne(
+            { $or: [{ legacy_id: parseInt(id, 10) }, { _id: id }] },
+            { $set: { status } }
+          );
+        }
+      } catch (mErr) {}
+    }
+
     res.json({ success: true, message: `संदेश स्थिति बदलकर '${status}' कर दी गई है।` });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -100,7 +130,18 @@ const updateContactStatus = async (req, res) => {
 const deleteContact = async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query('DELETE FROM contact_submissions WHERE id = ?', [id]);
+    await db.query('DELETE FROM contact_submissions WHERE id = ?', [id]).catch(() => {});
+
+    if (isMongoReady()) {
+      try {
+        if (typeof id === 'string' && id.length === 24) {
+          await ContactSubmission.findByIdAndDelete(id);
+        } else {
+          await ContactSubmission.deleteOne({ $or: [{ legacy_id: parseInt(id, 10) }, { _id: id }] });
+        }
+      } catch (mErr) {}
+    }
+
     res.json({ success: true, message: 'संदेश हटा दिया गया।' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

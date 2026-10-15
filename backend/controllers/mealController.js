@@ -145,26 +145,60 @@ const getAllMealRequests = async (req, res) => {
     sql += ` ORDER BY m.created_at DESC`;
 
     let requests = await db.query(sql, params).catch(() => []);
-    if ((!requests || requests.length === 0) && isMongoReady()) {
+    if (!Array.isArray(requests)) requests = [];
+
+    // Always merge with MongoDB records if connected
+    if (isMongoReady()) {
       try {
-        const mReqs = await MealRequest.find().sort({ createdAt: -1 }).lean();
-        if (mReqs && mReqs.length > 0) {
-          requests = mReqs.map(m => ({
-            id: m._id,
-            user_name: m.userName,
-            mobile: m.mobile,
-            preferred_date: m.preferredDate,
-            people_count: m.peopleCount,
-            meal_type: m.mealType,
-            items_distributed: m.itemsDistributed || 'सात्विक भोजन',
-            message: m.message,
-            status: m.status,
-            created_at: m.createdAt
-          }));
+        const queryFilter = {};
+        if (status) queryFilter.status = status;
+        if (search) {
+          queryFilter.$or = [
+            { user_name: { $regex: search, $options: 'i' } },
+            { mobile: { $regex: search, $options: 'i' } },
+            { meal_type: { $regex: search, $options: 'i' } }
+          ];
         }
-      } catch (e) {}
+
+        const mReqs = await MealRequest.find(queryFilter).sort({ createdAt: -1 }).lean();
+        if (mReqs && mReqs.length > 0) {
+          const mongoList = mReqs.map(m => ({
+            id: m._id,
+            user_name: m.user_name || m.userName || 'दानदाता',
+            mobile: m.mobile || '',
+            preferred_date: normalizeDateStr(m.preferred_date || m.preferredDate),
+            people_count: m.people_count || m.peopleCount || 50,
+            meal_type: m.meal_type || m.mealType || 'दोपहर का भोजन',
+            items_distributed: m.items_distributed || m.itemsDistributed || 'सात्विक भोजन, फल एवं मिष्ठान',
+            message: m.message || '',
+            status: m.status || 'लंबित',
+            created_at: m.createdAt || new Date().toISOString()
+          }));
+
+          const seen = new Set(requests.map(r => `${r.mobile}_${normalizeDateStr(r.preferred_date)}_${r.meal_type}`));
+          for (const mItem of mongoList) {
+            const key = `${mItem.mobile}_${mItem.preferred_date}_${mItem.meal_type}`;
+            if (!seen.has(key)) {
+              requests.push(mItem);
+              seen.add(key);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Mongo meals merge notice:', e.message);
+      }
     }
-    res.json({ success: true, count: requests ? requests.length : 0, requests: requests || [] });
+
+    // Ensure all dates are properly normalized
+    requests = requests.map(r => ({
+      ...r,
+      preferred_date: normalizeDateStr(r.preferred_date),
+      items_distributed: r.items_distributed || 'सात्विक भोजन'
+    }));
+
+    requests.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    res.json({ success: true, count: requests.length, requests });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -180,7 +214,23 @@ const updateMealStatus = async (req, res) => {
       return res.status(400).json({ success: false, message: 'कृपया स्थिति (Status) निर्दिष्ट करें।' });
     }
 
-    const currentReq = await db.query(`SELECT * FROM meal_requests WHERE id = ?`, [id]);
+    let currentReq = await db.query(`SELECT * FROM meal_requests WHERE id = ?`, [id]).catch(() => []);
+    if ((!currentReq || currentReq.length === 0) && isMongoReady()) {
+      try {
+        const mDoc = await MealRequest.findById(id).lean();
+        if (mDoc) {
+          currentReq = [{
+            id: mDoc._id,
+            user_name: mDoc.user_name || mDoc.userName,
+            preferred_date: mDoc.preferred_date || mDoc.preferredDate,
+            meal_type: mDoc.meal_type || mDoc.mealType,
+            user_id: mDoc.user_id || 0,
+            status: mDoc.status
+          }];
+        }
+      } catch (e) {}
+    }
+
     if (!currentReq || currentReq.length === 0) {
       return res.status(404).json({ success: false, message: 'भोजन अनुरोध नहीं मिला।' });
     }
@@ -190,15 +240,19 @@ const updateMealStatus = async (req, res) => {
     await db.query(
       `UPDATE meal_requests SET status = ?, admin_note = ? WHERE id = ?`,
       [status, admin_note || null, id]
-    );
+    ).catch(() => {});
 
     // Update in MongoDB as well if connected
     if (isMongoReady()) {
       try {
-        await MealRequest.updateOne(
-          { legacy_id: parseInt(id, 10) },
-          { $set: { status: status } }
-        );
+        if (typeof id === 'string' && id.length === 24) {
+          await MealRequest.findByIdAndUpdate(id, { $set: { status } });
+        } else {
+          await MealRequest.updateOne(
+            { $or: [{ legacy_id: parseInt(id, 10) }, { _id: id }] },
+            { $set: { status } }
+          );
+        }
       } catch (mErr) {
         // ignore
       }
@@ -208,10 +262,10 @@ const updateMealStatus = async (req, res) => {
     await db.query(
       `INSERT INTO request_status_history (request_type, request_id, previous_status, new_status, changed_by, notes)
        VALUES ('meal', ?, ?, ?, ?, ?)`,
-      [id, oldStatus, status, req.user.id, admin_note || '']
-    );
+      [id, oldStatus, status, req.user ? req.user.id : 1, admin_note || '']
+    ).catch(() => {});
 
-    // Send notification to user
+    // Send notification to user if applicable
     const statusMsgHindi = {
       'स्वीकार किया गया': `आपका भोजन प्रायोजन अनुरोध (${currentReq[0].preferred_date} - ${currentReq[0].meal_type}) स्वीकार कर लिया गया है। साधुवाद!`,
       'अस्वीकार किया गया': `आपका भोजन प्रायोजन अनुरोध (${currentReq[0].preferred_date}) स्वीकार नहीं किया जा सका। कारण: ${admin_note || 'स्थान उपलब्ध नहीं'}`,
@@ -221,10 +275,12 @@ const updateMealStatus = async (req, res) => {
 
     const notifMsg = statusMsgHindi[status] || `आपके भोजन अनुरोध की स्थिति बदल कर '${status}' कर दी गई है।`;
 
-    await db.query(
-      `INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, 'meal')`,
-      [currentReq[0].user_id, `भोजन अनुरोध स्थिति: ${status}`, notifMsg]
-    );
+    if (currentReq[0].user_id) {
+      await db.query(
+        `INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, 'meal')`,
+        [currentReq[0].user_id, `भोजन अनुरोध स्थिति: ${status}`, notifMsg]
+      ).catch(() => {});
+    }
 
     res.json({
       success: true,
@@ -239,7 +295,18 @@ const updateMealStatus = async (req, res) => {
 const deleteMealRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query('DELETE FROM meal_requests WHERE id = ?', [id]);
+    await db.query('DELETE FROM meal_requests WHERE id = ?', [id]).catch(() => {});
+    if (isMongoReady()) {
+      try {
+        if (typeof id === 'string' && id.length === 24) {
+          await MealRequest.findByIdAndDelete(id);
+        } else {
+          await MealRequest.deleteOne({ $or: [{ legacy_id: parseInt(id, 10) }, { _id: id }] });
+        }
+      } catch (mErr) {
+        // ignore
+      }
+    }
     res.json({ success: true, message: 'भोजन प्रायोजन अनुरोध रिकॉर्ड हटा दिया गया।' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

@@ -1,0 +1,186 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "मुख्य प्रशासक (Admin)",
+      "email": "admin@aashray.org",
+      "mobile": "6306638958",
+      "password": "$2b$10$012vPnMx9cBiCkVjJT6g3Ovm.Ut01O1p181SEfHAfXUuHMdMOWwPy",
+      "role": "admin",
+      "address": "आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)",
+      "is_active": 1,
+      "created_at": "2026-10-15T09:54:01.218Z",
+      "updated_at": "2026-10-15T09:54:01.227Z"
+    },
+    {
+      "id": 2,
+      "name": "राजेश शर्मा (प्रबंधक)",
+      "email": "rajesh@aashray.org",
+      "mobile": "9876543211",
+      "password": "$2b$10$81Lt.bTZ1./9RfOmCUQ49OYJ1EdxyK5PtUK6vD7o8Exj6qtzQpgJa",
+      "role": "manager",
+      "address": "उरई, जालौन",
+      "is_active": 1,
+      "created_at": "2026-10-15T09:54:01.227Z",
+      "updated_at": "2026-10-15T09:54:01.227Z"
+    }
+  ],
+  "home_information": [
+    {
+      "id": 1,
+      "name": "आश्रय वृद्धाश्रम",
+      "tagline": "वरिष्ठ नागरिकों का अपना स्नेहपूर्ण एवं सुरक्षित धाम",
+      "description": "आश्रय वृद्धाश्रम उरई (जालौन) में असहाय, बेघर एवं वरिष्ठ नागरिकों की सेवा और देखभाल के लिए समर्पित एक गैर-लाभकारी संस्था है। यहाँ बुजुर्गों को सात्विक भोजन, नियमित स्वास्थ्य देखभाल, योगाभ्यास, भक्ति भजन और आत्मीय परिवार जैसा वातावरण प्रदान किया जाता है।",
+      "address": "108, आश्रय धाम, स्टेशन रोड, उरई - 285001, जिला जालौन (उत्तर प्रदेश)",
+      "phone": "+91 6306638958 / 05162-250108",
+      "email": "info@aashray.org",
+      "facilities": "[\"24x7 स्वास्थ्य देखभाल एवं डॉक्टर परामर्श\",\"सात्विक एवं पौष्टिक भोजन\",\"वातानुकूलित (AC) और आरामदायक कमरे\",\"दैनिक योग, ध्यान एवं श्री कृष्ण संकीर्तन\",\"पुस्तकालय एवं मनोरंजन कक्ष\",\"धार्मिक एवं सांस्कृतिक यात्राएँ\"]",
+      "hero_image": "https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=1200&q=80",
+      "about_images": "[\"https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80\",\"https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80\"]",
+      "updated_at": "2026-10-15T09:54:01.227Z"
+    }
+  ],
+  "needs": [
+    {
+      "id": 1,
+      "title": "सर्दियों के लिए गर्म कंबल एवं चादरें",
+      "category": "कपड़े",
+      "description": "आश्रम के 45 बुजुर्ग निवासियों के लिए सर्दियों हेतु ऊनी कंबल और कॉटन चादरों की आवश्यकता है।",
+      "required_quantity": 50,
+      "available_quantity": 15,
+      "unit": "नग",
+      "photo_url": "https://images.unsplash.com/photo-1584100936595-c0654b55a2e2?auto=format&fit=crop&w=600&q=80",
+      "status": "सक्रिय",
+      "created_by": 1,
+      "created_at": "2026-10-15T09:54:01.228Z"
+    },
+    {
+      "id": 2,
+      "title": "दैनिक मधुमेह एवं बीपी की दवाइयाँ",
+      "category": "दवाइयाँ",
+      "description": "बुजुर्गों के नियमित स्वास्थ्य परीक्षण और मासिक दवाओं के लिए सहायता।",
+      "required_quantity": 100,
+      "available_quantity": 40,
+      "unit": "पैकेट",
+      "photo_url": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=600&q=80",
+      "status": "सक्रिय",
+      "created_by": 1,
+      "created_at": "2026-10-15T09:54:01.228Z"
+    },
+    {
+      "id": 3,
+      "title": "कमरों के लिए खड़े पंखे (Stand Fans)",
+      "category": "पंखे",
+      "description": "गर्मी के मौसम में बुजुर्गों के विश्राम कक्षों के लिए वाटर कूलिंग स्टैंड फैन्स।",
+      "required_quantity": 10,
+      "available_quantity": 4,
+      "unit": "नग",
+      "photo_url": "https://images.unsplash.com/photo-1618961734760-466979ce35b0?auto=format&fit=crop&w=600&q=80",
+      "status": "सक्रिय",
+      "created_by": 2,
+      "created_at": "2026-10-15T09:54:01.228Z"
+    },
+    {
+      "id": 4,
+      "title": "सात्विक भोजन सामग्री (आटा, चावल, दाल)",
+      "category": "भोजन",
+      "description": "मासिक रसोई हेतु शुद्ध देसी घी, बासमती चावल, अरहर दाल और गेहूं के आटे की रसद।",
+      "required_quantity": 200,
+      "available_quantity": 120,
+      "unit": "किलो",
+      "photo_url": "https://images.unsplash.com/photo-1586201375761-83865001e8ac?auto=format&fit=crop&w=600&q=80",
+      "status": "सक्रिय",
+      "created_by": 1,
+      "created_at": "2026-10-15T09:54:01.228Z"
+    }
+  ],
+  "meal_requests": [
+    {
+      "id": 1,
+      "user_id": 3,
+      "user_name": "अमित कुमार (दानदाता)",
+      "mobile": "9876543212",
+      "preferred_date": "2026-10-15",
+      "people_count": 50,
+      "meal_type": "दोपहर का भोजन",
+      "items_distributed": "सात्विक भोजन, खीर एवं फल",
+      "message": "पिताजी के जन्मदिन पर सभी बुजुर्गों को विशेष भोजन।",
+      "status": "लंबित",
+      "admin_note": null,
+      "created_at": "2026-10-15T09:54:01.228Z",
+      "updated_at": "2026-10-15T09:54:01.228Z"
+    }
+  ],
+  "volunteer_registrations": [
+    {
+      "id": 1,
+      "user_id": 3,
+      "full_name": "अमित कुमार",
+      "mobile": "9876543212",
+      "email": "amit@gmail.com",
+      "address": "उरई (जालौन)",
+      "preferred_date": "2026-10-15",
+      "help_type": "भोजन वितरण",
+      "message": "रविवार को भोजन परोसने और सेवा करने का अवसर चाहिए।",
+      "status": "स्वीकार किया गया",
+      "admin_note": null,
+      "created_at": "2026-10-15T09:54:01.228Z",
+      "updated_at": "2026-10-15T09:54:01.228Z"
+    }
+  ],
+  "assistance_requests": [
+    {
+      "id": 1,
+      "user_id": 3,
+      "elderly_name": "रामलाल जी (उम्र 72)",
+      "elderly_age": 72,
+      "contact_number": "9876500000",
+      "address": "स्टेशन रोड, उरई",
+      "assistance_type": "दवाइयाँ",
+      "description": "बुजुर्ग को नियमित बीपी एवं शुगर की दवाओं की तत्काल आवश्यकता है।",
+      "photo_url": null,
+      "assigned_manager_id": null,
+      "status": "लंबित",
+      "admin_note": null,
+      "created_at": "2026-10-15T09:54:01.228Z",
+      "updated_at": "2026-10-15T09:54:01.228Z"
+    }
+  ],
+  "events": [
+    {
+      "id": 1,
+      "title": "श्री कृष्ण जन्माष्टमी उत्सव एवं महाप्रसाद",
+      "event_date": "2026-08-25",
+      "description": "आश्रय परिसर में बाबाओं और माताओं द्वारा कृष्ण भजन संध्या, झांकी एवं 56 भोग महाप्रसाद वितरण समारोह।",
+      "image_url": "https://images.unsplash.com/photo-1609137144813-7d9921338f24?auto=format&fit=crop&w=800&q=80",
+      "is_published": 1,
+      "created_by": 1,
+      "created_at": "2026-10-15T09:54:01.228Z"
+    },
+    {
+      "id": 2,
+      "title": "निःशुल्क नेत्र जांच एवं स्वास्थ्य शिविर",
+      "event_date": "2026-09-15",
+      "description": "प्रसिद्ध नेत्र विशेषज्ञों द्वारा आश्रम के सभी बुजुर्गों की आँखों की जांच और निःशुल्क चश्मों का वितरण।",
+      "image_url": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
+      "is_published": 1,
+      "created_by": 1,
+      "created_at": "2026-10-15T09:54:01.228Z"
+    }
+  ],
+  "gallery_images": [],
+  "contact_submissions": [
+    {
+      "id": 1,
+      "name": "विकास शर्मा",
+      "mobile": "9123456789",
+      "email": "vikas@gmail.com",
+      "subject": "आश्रम भ्रमण एवं सहयोग",
+      "message": "हम सपरिवार आकर आश्रम में बुजुर्गों से मिलना चाहते हैं।",
+      "status": "अपठित",
+      "created_at": "2026-10-15T09:54:01.228Z"
+    }
+  ],
+  "notifications": [],
+  "request_status_history": []
+}

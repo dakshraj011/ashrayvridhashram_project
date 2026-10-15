@@ -108,26 +108,54 @@ const getAllAssistanceRequests = async (req, res) => {
     sql += ` ORDER BY a.created_at DESC`;
 
     let requests = await db.query(sql, params).catch(() => []);
-    if ((!requests || requests.length === 0) && isMongoReady()) {
+    if (!Array.isArray(requests)) requests = [];
+
+    // Always merge with MongoDB if connected
+    if (isMongoReady()) {
       try {
-        const mReqs = await AssistanceRequest.find().sort({ createdAt: -1 }).lean();
-        if (mReqs && mReqs.length > 0) {
-          requests = mReqs.map(a => ({
-            id: a._id,
-            elderly_name: a.elderlyName,
-            elderly_age: a.elderlyAge,
-            contact_number: a.contactNumber,
-            address: a.address,
-            assistance_type: a.assistanceType,
-            description: a.description,
-            photo_url: a.photoUrl,
-            status: a.status,
-            created_at: a.createdAt
-          }));
+        const queryFilter = {};
+        if (status) queryFilter.status = status;
+        if (type) queryFilter.assistance_type = type;
+        if (search) {
+          queryFilter.$or = [
+            { elderly_name: { $regex: search, $options: 'i' } },
+            { contact_number: { $regex: search, $options: 'i' } },
+            { address: { $regex: search, $options: 'i' } }
+          ];
         }
-      } catch (e) {}
+
+        const mReqs = await AssistanceRequest.find(queryFilter).sort({ createdAt: -1 }).lean();
+        if (mReqs && mReqs.length > 0) {
+          const mongoList = mReqs.map(a => ({
+            id: a._id,
+            elderly_name: a.elderly_name || a.elderlyName || 'वरिष्ठ नागरिक',
+            elderly_age: a.elderly_age || a.elderlyAge || '',
+            contact_number: a.contact_number || a.contactNumber || '',
+            address: a.address || '',
+            assistance_type: a.assistance_type || a.assistanceType || 'दवा एवं स्वास्थ्य',
+            description: a.description || '',
+            photo_url: a.photo_url || a.photoUrl || null,
+            status: a.status || 'लंबित',
+            created_at: a.createdAt || new Date().toISOString()
+          }));
+
+          const seen = new Set(requests.map(r => `${r.contact_number}_${r.elderly_name}`));
+          for (const aItem of mongoList) {
+            const key = `${aItem.contact_number}_${aItem.elderly_name}`;
+            if (!seen.has(key)) {
+              requests.push(aItem);
+              seen.add(key);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Mongo assistance merge notice:', e.message);
+      }
     }
-    res.json({ success: true, count: requests ? requests.length : 0, requests: requests || [] });
+
+    requests.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    res.json({ success: true, count: requests.length, requests });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -139,7 +167,21 @@ const updateAssistanceStatus = async (req, res) => {
     const { id } = req.params;
     const { status, assigned_manager_id, admin_note } = req.body;
 
-    const currentReq = await db.query(`SELECT * FROM assistance_requests WHERE id = ?`, [id]);
+    let currentReq = await db.query(`SELECT * FROM assistance_requests WHERE id = ?`, [id]).catch(() => []);
+    if ((!currentReq || currentReq.length === 0) && isMongoReady()) {
+      try {
+        const aDoc = await AssistanceRequest.findById(id).lean();
+        if (aDoc) {
+          currentReq = [{
+            id: aDoc._id,
+            elderly_name: aDoc.elderly_name || aDoc.elderlyName,
+            status: aDoc.status,
+            user_id: aDoc.user_id || 0
+          }];
+        }
+      } catch (e) {}
+    }
+
     if (!currentReq || currentReq.length === 0) {
       return res.status(404).json({ success: false, message: 'सहायता अनुरोध नहीं मिला।' });
     }
@@ -154,20 +196,40 @@ const updateAssistanceStatus = async (req, res) => {
         admin_note || currentReq[0].admin_note,
         id
       ]
-    );
+    ).catch(() => {});
+
+    if (isMongoReady()) {
+      try {
+        if (typeof id === 'string' && id.length === 24) {
+          await AssistanceRequest.findByIdAndUpdate(id, {
+            $set: {
+              status: status || oldStatus,
+              admin_note: admin_note || ''
+            }
+          });
+        } else {
+          await AssistanceRequest.updateOne(
+            { $or: [{ legacy_id: parseInt(id, 10) }, { _id: id }] },
+            { $set: { status: status || oldStatus } }
+          );
+        }
+      } catch (mErr) {}
+    }
 
     // Save history
     await db.query(
       `INSERT INTO request_status_history (request_type, request_id, previous_status, new_status, changed_by, notes)
        VALUES ('assistance', ?, ?, ?, ?, ?)`,
-      [id, oldStatus, status || oldStatus, req.user.id, admin_note || '']
-    );
+      [id, oldStatus, status || oldStatus, req.user ? req.user.id : 1, admin_note || '']
+    ).catch(() => {});
 
     // Notify user
-    await db.query(
-      `INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, 'assistance')`,
-      [currentReq[0].user_id, `बुजुर्ग सहायता स्थिति: ${status}`, `'${currentReq[0].elderly_name}' सहायता अनुरोध की स्थिति बदल कर '${status}' कर दी गई है।`]
-    );
+    if (currentReq[0].user_id) {
+      await db.query(
+        `INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, 'assistance')`,
+        [currentReq[0].user_id, `बुजुर्ग सहायता स्थिति: ${status}`, `'${currentReq[0].elderly_name}' सहायता अनुरोध की स्थिति बदल कर '${status}' कर दी गई है।`]
+      ).catch(() => {});
+    }
 
     res.json({
       success: true,
@@ -182,7 +244,16 @@ const updateAssistanceStatus = async (req, res) => {
 const deleteAssistanceRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query('DELETE FROM assistance_requests WHERE id = ?', [id]);
+    await db.query('DELETE FROM assistance_requests WHERE id = ?', [id]).catch(() => {});
+    if (isMongoReady()) {
+      try {
+        if (typeof id === 'string' && id.length === 24) {
+          await AssistanceRequest.findByIdAndDelete(id);
+        } else {
+          await AssistanceRequest.deleteOne({ $or: [{ legacy_id: parseInt(id, 10) }, { _id: id }] });
+        }
+      } catch (mErr) {}
+    }
     res.json({ success: true, message: 'बुजुर्ग सहायता अनुरोध रिकॉर्ड हटा दिया गया।' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

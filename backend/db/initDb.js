@@ -8,10 +8,12 @@ try {
 const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
+const JsonStore = require('./jsonStore');
 
-let dbDriver = 'sqlite'; // Default fallback driver
+let dbDriver = 'sqlite'; // Default driver
 let mysqlPool = null;
 let sqliteDb = null;
+const jsonStore = new JsonStore();
 
 // Database helper object
 const db = {
@@ -156,7 +158,10 @@ const db = {
 
   async initSQLite() {
     if (!sqlite3) {
-      console.warn('⚠️ [DB] sqlite3 is not available in current environment. Proceeding with fallback.');
+      console.warn('⚠️ [DB] sqlite3 is not available in current environment. Using persistent JsonStore fallback.');
+      dbDriver = 'json';
+      this.driver = 'json';
+      await jsonStore.seedIfEmpty();
       return;
     }
     const dbPath = path.join(__dirname, 'aashray.db');
@@ -484,7 +489,7 @@ const db = {
     }
   },
 
-  // Unified Query Helper (Works seamlessly for MySQL & SQLite)
+  // Unified Query Helper (Works seamlessly for MySQL, SQLite & JsonStore)
   async query(sql, params = []) {
     if (this.driver === 'mysql' && mysqlPool) {
       const [rows] = await mysqlPool.query(sql, params);
@@ -509,8 +514,9 @@ const db = {
           });
         }
       });
+    } else {
+      return await jsonStore.query(sql, params);
     }
-    return [];
   }
 };
 

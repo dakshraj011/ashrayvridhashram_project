@@ -100,26 +100,53 @@ const getAllVolunteers = async (req, res) => {
     sql += ` ORDER BY created_at DESC`;
 
     let registrations = await db.query(sql, params).catch(() => []);
-    if ((!registrations || registrations.length === 0) && isMongoReady()) {
+    if (!Array.isArray(registrations)) registrations = [];
+
+    // Always merge with MongoDB if connected
+    if (isMongoReady()) {
       try {
-        const mRegs = await VolunteerRegistration.find().sort({ createdAt: -1 }).lean();
-        if (mRegs && mRegs.length > 0) {
-          registrations = mRegs.map(v => ({
-            id: v._id,
-            full_name: v.fullName,
-            mobile: v.mobile,
-            email: v.email,
-            address: v.address,
-            preferred_date: v.preferredDate,
-            help_type: v.helpType,
-            message: v.message,
-            status: v.status,
-            created_at: v.createdAt
-          }));
+        const queryFilter = {};
+        if (status) queryFilter.status = status;
+        if (search) {
+          queryFilter.$or = [
+            { full_name: { $regex: search, $options: 'i' } },
+            { mobile: { $regex: search, $options: 'i' } },
+            { help_type: { $regex: search, $options: 'i' } }
+          ];
         }
-      } catch (e) {}
+
+        const mRegs = await VolunteerRegistration.find(queryFilter).sort({ createdAt: -1 }).lean();
+        if (mRegs && mRegs.length > 0) {
+          const mongoList = mRegs.map(v => ({
+            id: v._id,
+            full_name: v.full_name || v.fullName || 'स्वयंसेवक',
+            mobile: v.mobile || '',
+            email: v.email || '',
+            address: v.address || '',
+            preferred_date: v.preferred_date || v.preferredDate || '',
+            help_type: v.help_type || v.helpType || 'सामान्य सेवा',
+            message: v.message || '',
+            status: v.status || 'लंबित',
+            created_at: v.createdAt || new Date().toISOString()
+          }));
+
+          const seen = new Set(registrations.map(r => `${r.mobile}_${r.preferred_date}`));
+          for (const vItem of mongoList) {
+            const key = `${vItem.mobile}_${vItem.preferred_date}`;
+            if (!seen.has(key)) {
+              registrations.push(vItem);
+              seen.add(key);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Mongo volunteers merge notice:', e.message);
+      }
     }
-    res.json({ success: true, count: registrations ? registrations.length : 0, registrations: registrations || [] });
+
+    registrations.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+    res.json({ success: true, count: registrations.length, registrations });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -131,7 +158,23 @@ const updateVolunteerStatus = async (req, res) => {
     const { id } = req.params;
     const { status, admin_note } = req.body;
 
-    const currentReg = await db.query(`SELECT * FROM volunteer_registrations WHERE id = ?`, [id]);
+    let currentReg = await db.query(`SELECT * FROM volunteer_registrations WHERE id = ?`, [id]).catch(() => []);
+    if ((!currentReg || currentReg.length === 0) && isMongoReady()) {
+      try {
+        const vDoc = await VolunteerRegistration.findById(id).lean();
+        if (vDoc) {
+          currentReg = [{
+            id: vDoc._id,
+            full_name: vDoc.full_name || vDoc.fullName,
+            preferred_date: vDoc.preferred_date || vDoc.preferredDate,
+            help_type: vDoc.help_type || vDoc.helpType,
+            user_id: vDoc.user_id || 0,
+            status: vDoc.status
+          }];
+        }
+      } catch (e) {}
+    }
+
     if (!currentReg || currentReg.length === 0) {
       return res.status(404).json({ success: false, message: 'स्वयंसेवक पंजीकरण नहीं मिला।' });
     }
@@ -141,24 +184,39 @@ const updateVolunteerStatus = async (req, res) => {
     await db.query(
       `UPDATE volunteer_registrations SET status = ?, admin_note = ? WHERE id = ?`,
       [status, admin_note || null, id]
-    );
+    ).catch(() => {});
+
+    if (isMongoReady()) {
+      try {
+        if (typeof id === 'string' && id.length === 24) {
+          await VolunteerRegistration.findByIdAndUpdate(id, { $set: { status } });
+        } else {
+          await VolunteerRegistration.updateOne(
+            { $or: [{ legacy_id: parseInt(id, 10) }, { _id: id }] },
+            { $set: { status } }
+          );
+        }
+      } catch (mErr) {}
+    }
 
     // Save history
     await db.query(
       `INSERT INTO request_status_history (request_type, request_id, previous_status, new_status, changed_by, notes)
        VALUES ('volunteer', ?, ?, ?, ?, ?)`,
-      [id, oldStatus, status, req.user.id, admin_note || '']
-    );
+      [id, oldStatus, status, req.user ? req.user.id : 1, admin_note || '']
+    ).catch(() => {});
 
     // Notify user
     const notifMsg = status === 'स्वीकार किया गया' 
       ? `बधाई हो! ${currentReg[0].preferred_date} हेतु आपका ${currentReg[0].help_type} स्वयंसेवक आवेदन स्वीकृत कर लिया गया है।`
       : `आपके स्वयंसेवक पंजीकरण की स्थिति '${status}' कर दी गई है।`;
 
-    await db.query(
-      `INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, 'volunteer')`,
-      [currentReg[0].user_id, `स्वयंसेवक आवेदन: ${status}`, notifMsg]
-    );
+    if (currentReg[0].user_id) {
+      await db.query(
+        `INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, 'volunteer')`,
+        [currentReg[0].user_id, `स्वयंसेवक आवेदन: ${status}`, notifMsg]
+      ).catch(() => {});
+    }
 
     res.json({
       success: true,
@@ -173,7 +231,16 @@ const updateVolunteerStatus = async (req, res) => {
 const deleteVolunteer = async (req, res) => {
   try {
     const { id } = req.params;
-    await db.query('DELETE FROM volunteer_registrations WHERE id = ?', [id]);
+    await db.query('DELETE FROM volunteer_registrations WHERE id = ?', [id]).catch(() => {});
+    if (isMongoReady()) {
+      try {
+        if (typeof id === 'string' && id.length === 24) {
+          await VolunteerRegistration.findByIdAndDelete(id);
+        } else {
+          await VolunteerRegistration.deleteOne({ $or: [{ legacy_id: parseInt(id, 10) }, { _id: id }] });
+        }
+      } catch (mErr) {}
+    }
     res.json({ success: true, message: 'स्वयंसेवक पंजीकरण रिकॉर्ड हटा दिया गया।' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
