@@ -16,6 +16,13 @@ export const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  React.useEffect(() => {
+    // Clear any stuck/stale tokens on login screen
+    localStorage.removeItem('aashray_token');
+    localStorage.removeItem('aashray_user');
+    sessionStorage.removeItem('admin_pwd_verified');
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!password.trim()) {
