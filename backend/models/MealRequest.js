@@ -24,7 +24,7 @@ const mealRequestSchema = new mongoose.Schema({
   },
   people_count: {
     type: Number,
-    default: 50
+    default: 0
   },
   items_distributed: {
     type: String,

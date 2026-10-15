@@ -63,6 +63,19 @@ const createMealRequest = async (req, res) => {
       });
     }
 
+    let parsedCount = 0;
+    if (people_count !== undefined && people_count !== null && people_count !== '') {
+      const num = parseInt(people_count, 10);
+      parsedCount = isNaN(num) ? 0 : num;
+    }
+
+    if (parsedCount < 0 || parsedCount > 200) {
+      return res.status(400).json({
+        success: false,
+        message: 'व्यक्तियों/बुजुर्गों की संख्या 0 से 200 के बीच होनी चाहिए।'
+      });
+    }
+
     const userId = req.user ? req.user.id : 0;
     const name = user_name || (req.user ? req.user.name : '');
     const mob = cleanMobile;
@@ -71,7 +84,7 @@ const createMealRequest = async (req, res) => {
     const result = await db.query(
       `INSERT INTO meal_requests (user_id, user_name, mobile, preferred_date, people_count, meal_type, items_distributed, message, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'लंबित')`,
-      [userId, name, mob, formattedDate, people_count || 50, meal_type, items, message || '']
+      [userId, name, mob, formattedDate, parsedCount, meal_type, items, message || '']
     );
 
     // Save to MongoDB collection if connected
@@ -82,7 +95,7 @@ const createMealRequest = async (req, res) => {
           mobile: mob,
           preferred_date: formattedDate,
           meal_type,
-          people_count: people_count || 50,
+          people_count: parsedCount,
           items_distributed: items,
           message: message || '',
           status: 'लंबित',
@@ -116,10 +129,58 @@ const createMealRequest = async (req, res) => {
 // Get My Meal Requests (User)
 const getMyMealRequests = async (req, res) => {
   try {
-    const requests = await db.query(
+    let requests = await db.query(
       `SELECT * FROM meal_requests WHERE user_id = ? ORDER BY created_at DESC`,
       [req.user.id]
-    );
+    ).catch(() => []);
+    if (!Array.isArray(requests)) requests = [];
+
+    // If Mongo is active, fetch user's meal requests from Mongo as well
+    if (isMongoReady()) {
+      try {
+        const mDocs = await MealRequest.find({
+          $or: [
+            { user_id: req.user.id },
+            { mobile: req.user.mobile }
+          ]
+        }).sort({ createdAt: -1 }).lean();
+
+        if (mDocs && mDocs.length > 0) {
+          const mongoList = mDocs.map(m => ({
+            id: m._id,
+            user_name: m.user_name || m.userName || req.user.name,
+            mobile: m.mobile || '',
+            preferred_date: normalizeDateStr(m.preferred_date || m.preferredDate),
+            people_count: m.people_count != null ? m.people_count : 0,
+            meal_type: m.meal_type || m.mealType || 'दोपहर का भोजन',
+            items_distributed: m.items_distributed || m.itemsDistributed || 'सात्विक भोजन, फल एवं मिष्ठान',
+            message: m.message || '',
+            status: m.status || 'लंबित',
+            created_at: m.createdAt || new Date().toISOString()
+          }));
+
+          const seen = new Set(requests.map(r => `${r.mobile}_${normalizeDateStr(r.preferred_date)}_${r.meal_type}`));
+          for (const mItem of mongoList) {
+            const key = `${mItem.mobile}_${mItem.preferred_date}_${mItem.meal_type}`;
+            if (!seen.has(key)) {
+              requests.push(mItem);
+              seen.add(key);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Mongo user meals fetch notice:', e.message);
+      }
+    }
+
+    requests = requests.map(r => ({
+      ...r,
+      preferred_date: normalizeDateStr(r.preferred_date),
+      people_count: r.people_count != null ? r.people_count : 0
+    }));
+
+    requests.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
     res.json({ success: true, requests });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -167,7 +228,7 @@ const getAllMealRequests = async (req, res) => {
             user_name: m.user_name || m.userName || 'दानदाता',
             mobile: m.mobile || '',
             preferred_date: normalizeDateStr(m.preferred_date || m.preferredDate),
-            people_count: m.people_count || m.peopleCount || 50,
+            people_count: m.people_count != null ? m.people_count : (m.peopleCount != null ? m.peopleCount : 0),
             meal_type: m.meal_type || m.mealType || 'दोपहर का भोजन',
             items_distributed: m.items_distributed || m.itemsDistributed || 'सात्विक भोजन, फल एवं मिष्ठान',
             message: m.message || '',

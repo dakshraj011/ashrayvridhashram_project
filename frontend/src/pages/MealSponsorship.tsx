@@ -25,11 +25,19 @@ export const MealSponsorship: React.FC = () => {
     return d.toISOString().split('T')[0];
   };
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    user_name: string;
+    mobile: string;
+    preferred_date: string;
+    people_count: number | '';
+    meal_type: string;
+    items_distributed: string;
+    message: string;
+  }>({
     user_name: '',
     mobile: '',
     preferred_date: tomorrowStr(),
-    people_count: 50,
+    people_count: 0,
     meal_type: 'दोपहर का भोजन',
     items_distributed: 'सात्विक भोजन, फल एवं मिठाई',
     message: ''
@@ -110,12 +118,19 @@ export const MealSponsorship: React.FC = () => {
       return;
     }
 
+    const pCount = formData.people_count === '' ? 0 : Number(formData.people_count);
+    if (isNaN(pCount) || pCount < 0 || pCount > 200) {
+      setStatusMsg({ text: 'व्यक्तियों की संख्या 0 से 200 के बीच होनी चाहिए।', isError: true });
+      return;
+    }
+
     setLoading(true);
     setStatusMsg(null);
 
     try {
       const res = await api.post('/meals', {
         ...formData,
+        people_count: pCount,
         mobile: cleanMobile
       });
 
@@ -127,7 +142,7 @@ export const MealSponsorship: React.FC = () => {
           user_name: '',
           mobile: '',
           preferred_date: tomorrowStr(),
-          people_count: 50,
+          people_count: 0,
           meal_type: 'दोपहर का भोजन',
           items_distributed: 'सात्विक भोजन, फल एवं मिठाई',
           message: ''
@@ -326,16 +341,35 @@ export const MealSponsorship: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-bold text-maroon dark:text-gold mb-1">
-                व्यक्तियों/बुजुर्गों की संख्या
+                व्यक्तियों/बुजुर्गों की संख्या (0 से 200)
               </label>
               <input
                 type="number"
-                min={10}
+                min={0}
                 max={200}
                 value={formData.people_count}
-                onChange={(e) => setFormData({ ...formData, people_count: parseInt(e.target.value, 10) || 50 })}
-                className="w-full px-4 py-3 rounded-xl border border-gold/40 bg-cream/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-saffron"
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === '') {
+                    setFormData({ ...formData, people_count: '' });
+                  } else {
+                    const parsed = parseInt(val, 10);
+                    if (isNaN(parsed)) {
+                      setFormData({ ...formData, people_count: '' });
+                    } else if (parsed > 200) {
+                      setFormData({ ...formData, people_count: 200 });
+                    } else if (parsed < 0) {
+                      setFormData({ ...formData, people_count: 0 });
+                    } else {
+                      setFormData({ ...formData, people_count: parsed });
+                    }
+                  }
+                }}
+                placeholder="0"
+                className="w-full px-4 py-3 rounded-xl border border-gold/40 bg-cream/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-saffron font-bold text-base"
               />
+              <p className="text-xs text-slate-500 mt-1">डिफ़ॉल्ट 0 है। आप 0 से 200 तक कोई भी संख्या लिख सकते हैं।</p>
             </div>
 
             <div>

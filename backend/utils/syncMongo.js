@@ -27,7 +27,7 @@ const syncSqliteToMongo = async () => {
           mobile: m.mobile,
           preferred_date: (m.preferred_date || '').toString().split('T')[0],
           meal_type: m.meal_type,
-          people_count: m.people_count || 50,
+          people_count: m.people_count != null ? m.people_count : 0,
           items_distributed: m.items_distributed || 'सात्विक भोजन, फल एवं मिष्ठान',
           message: m.message || '',
           status: m.status || 'लंबित',
