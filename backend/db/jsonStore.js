@@ -298,10 +298,11 @@ class JsonStore {
 
     // 2. INSERT INTO <table> (<cols>) VALUES (?, ?, ...)
     if (upper.startsWith('INSERT INTO')) {
-      const match = rawSql.match(/INSERT\s+INTO\s+([a-zA-Z0-9_]+)\s*\(([^)]+)\)\s*VALUES/i);
+      const match = rawSql.match(/INSERT\s+INTO\s+([a-zA-Z0-9_]+)\s*\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i);
       if (match) {
         const table = match[1].toLowerCase();
         const cols = match[2].split(',').map(c => c.trim().replace(/[`"']/g, ''));
+        const valTokens = match[3].split(',').map(v => v.trim());
         if (!this.data[table]) this.data[table] = [];
 
         const newRecord = {};
@@ -309,9 +310,27 @@ class JsonStore {
         const maxId = existingIds.length > 0 ? Math.max(...existingIds) : 0;
         let idVal = maxId + 1;
 
+        let pIdx = 0;
         cols.forEach((col, idx) => {
-          newRecord[col] = params[idx] !== undefined ? params[idx] : null;
+          const token = valTokens[idx] || '?';
+          if (token === '?') {
+            newRecord[col] = params[pIdx] !== undefined ? params[pIdx] : null;
+            pIdx++;
+          } else {
+            // Literal value like 'लंबित', 'अपठित', 'user', 1, 0, NULL
+            let lit = token.replace(/^['"]|['"]$/g, '');
+            if (lit.toUpperCase() === 'NULL') lit = null;
+            else if (!isNaN(lit) && token.indexOf("'") === -1 && token.indexOf('"') === -1) lit = Number(lit);
+            newRecord[col] = lit;
+          }
         });
+
+        // Ensure default status
+        if (!newRecord.status) {
+          if (table === 'contact_submissions') newRecord.status = 'अपठित';
+          else if (table === 'needs') newRecord.status = 'सक्रिय';
+          else newRecord.status = 'लंबित';
+        }
 
         if (newRecord.id) {
           idVal = Number(newRecord.id);
@@ -339,7 +358,7 @@ class JsonStore {
         let filtered = rows;
         if (whereClause) {
           if (whereClause.includes("status = 'लंबित'")) {
-            filtered = rows.filter(r => r.status === 'लंबित');
+            filtered = rows.filter(r => (r.status === 'लंबित' || !r.status));
           } else if (whereClause.includes("status = 'सक्रिय'")) {
             filtered = rows.filter(r => r.status === 'सक्रिय');
           } else if (whereClause.includes("role = 'user'")) {
@@ -365,7 +384,15 @@ class JsonStore {
 
       // Handle simple WHERE conditions
       if (rawSql.includes('WHERE')) {
-        if (rawSql.includes('WHERE id = ?') || rawSql.includes('WHERE id = 1')) {
+        if (rawSql.includes('preferred_date = ?') || rawSql.includes('DATE(preferred_date)')) {
+          const targetDate = String(params[0] || '').split('T')[0];
+          if (targetDate) {
+            rows = rows.filter(r => String(r.preferred_date).split('T')[0] === targetDate);
+          }
+          if (rawSql.includes("status != 'अस्वीकार किया गया'")) {
+            rows = rows.filter(r => r.status !== 'अस्वीकार किया गया');
+          }
+        } else if (rawSql.includes('WHERE id = ?') || rawSql.includes('WHERE id = 1')) {
           const targetId = params.length > 0 ? Number(params[0]) : 1;
           rows = rows.filter(r => Number(r.id) === targetId);
         } else if (rawSql.includes('WHERE mobile = ? OR role = ?')) {
