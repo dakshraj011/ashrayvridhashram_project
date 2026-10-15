@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { PeacockFeatherIcon, AashrayLogo } from './KrishnaAccents';
 import { NotificationBell } from './NotificationBell';
-import { Sun, Moon, Menu, X, LogOut, ShieldCheck, HeartHandshake, Lock, User as UserIcon } from 'lucide-react';
+import { Sun, Moon, Menu, X, LogOut, ShieldCheck, Lock, User as UserIcon } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -98,10 +98,6 @@ export const Navbar: React.FC = () => {
                   <Link to="/admin" className="btn-secondary text-sm py-2 px-4 font-bold flex items-center gap-1.5 shadow-md">
                     <ShieldCheck className="w-4 h-4" /> व्यवस्थापक पैनल (Admin)
                   </Link>
-                ) : user.role === 'manager' ? (
-                  <Link to="/manager" className="btn-gold text-sm py-2 px-4 font-bold flex items-center gap-1.5 shadow-md">
-                    <HeartHandshake className="w-4 h-4" /> प्रबंधक पैनल (Manager)
-                  </Link>
                 ) : (
                   <Link to="/dashboard" className="btn-secondary text-sm py-2 px-4 font-bold flex items-center gap-1.5 shadow-md">
                     <UserIcon className="w-4 h-4" /> मेरा डैशबोर्ड (Dashboard)
@@ -117,9 +113,9 @@ export const Navbar: React.FC = () => {
                 </button>
               </>
             ) : (
-              <Link to="/login" className="btn-secondary text-sm py-2 px-4 flex items-center gap-1.5 shadow-md">
+              <Link to="/admin" className="btn-secondary text-sm py-2 px-4 font-bold flex items-center gap-1.5 shadow-md">
                 <Lock className="w-4 h-4" />
-                प्रशासक लॉगिन (Admin)
+                व्यवस्थापक पैनल (Admin)
               </Link>
             )}
           </div>
@@ -194,11 +190,6 @@ export const Navbar: React.FC = () => {
                     व्यवस्थापक पैनल (Admin)
                   </Link>
                 )}
-                {user.role === 'manager' && (
-                  <Link to="/manager" onClick={() => setIsMenuOpen(false)} className="btn-gold w-full text-center text-sm py-2">
-                    प्रबंधक पैनल (Manager)
-                  </Link>
-                )}
                 {user.role === 'user' && (
                   <Link to="/dashboard" onClick={() => setIsMenuOpen(false)} className="btn-secondary w-full text-center text-sm py-2">
                     मेरा डैशबोर्ड (User Dashboard)
@@ -209,9 +200,9 @@ export const Navbar: React.FC = () => {
                 </button>
               </>
             ) : (
-              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="btn-secondary w-full text-center text-sm py-2.5 flex items-center justify-center gap-2">
+              <Link to="/admin" onClick={() => setIsMenuOpen(false)} className="btn-secondary w-full text-center text-sm py-2.5 flex items-center justify-center gap-2">
                 <Lock className="w-4 h-4" />
-                प्रशासक लॉगिन (Admin Only)
+                व्यवस्थापक पैनल (Admin)
               </Link>
             )}
           </div>

@@ -18,7 +18,6 @@ import { MealSponsorship } from './pages/MealSponsorship';
 import { VolunteerRegister } from './pages/VolunteerRegister';
 import { ElderlyAssistance } from './pages/ElderlyAssistance';
 import { UserDashboard } from './pages/UserDashboard';
-import { ManagerDashboard } from './pages/ManagerDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 
 // Route Guards
@@ -28,25 +27,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   if (!user) return <Navigate to="/login" replace state={{ redirectMsg: 'सुरक्षा हेतु कृपया पहले लॉगिन करें।' }} />;
   return <>{children}</>;
 };
-
-const ManagerRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="text-center py-20 text-saffron font-bold text-xl">लोड हो रहा है...</div>;
-  if (!user || (user.role !== 'manager' && user.role !== 'admin')) {
-    return <Navigate to="/login" replace state={{ redirectMsg: 'सुरक्षा हेतु प्रबंधक (Manager) पैनल के लिए लॉगिन आवश्यक है।' }} />;
-  }
-  return <>{children}</>;
-};
-
-const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="text-center py-20 text-saffron font-bold text-xl">लोड हो रहा है...</div>;
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/login" replace state={{ redirectMsg: 'सुरक्षा चेतावनी: व्यवस्थापक (Admin) डैशबोर्ड के लिए पासवर्ड लॉगिन अनिवार्य है।' }} />;
-  }
-  return <>{children}</>;
-};
-
 
 export const AppContent: React.FC = () => {
   return (
@@ -71,10 +51,10 @@ export const AppContent: React.FC = () => {
           <Route path="/volunteer-register" element={<VolunteerRegister />} />
           <Route path="/elderly-assistance" element={<ElderlyAssistance />} />
 
-          {/* Role Protected Dashboards */}
+          {/* Role Dashboards */}
           <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-          <Route path="/manager" element={<ManagerRoute><ManagerDashboard /></ManagerRoute>} />
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/manager" element={<Navigate to="/admin" replace />} />
+          <Route path="/admin" element={<AdminDashboard />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

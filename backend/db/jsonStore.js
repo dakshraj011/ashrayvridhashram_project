@@ -27,6 +27,9 @@ class JsonStore {
         const raw = fs.readFileSync(this.filePath, 'utf8');
         const parsed = JSON.parse(raw);
         this.data = { ...this.data, ...parsed };
+        if (Array.isArray(this.data.users)) {
+          this.data.users = this.data.users.filter(u => u.role !== 'manager');
+        }
       }
     } catch (err) {
       console.warn('⚠️ [JsonStore] Error reading file, using in-memory state:', err.message);
@@ -48,10 +51,9 @@ class JsonStore {
   async seedIfEmpty() {
     let modified = false;
 
-    // 1. Ensure admin and manager
+    // 1. Ensure admin user only
     if (!this.data.users || this.data.users.length === 0) {
       const adminHash = await bcrypt.hash('radhe radhe', 10);
-      const mgrHash = await bcrypt.hash('manager123', 10);
       this.data.users = [
         {
           id: 1,
@@ -61,18 +63,6 @@ class JsonStore {
           password: adminHash,
           role: 'admin',
           address: 'आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)',
-          is_active: 1,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        {
-          id: 2,
-          name: 'राजेश शर्मा (प्रबंधक)',
-          email: 'rajesh@aashray.org',
-          mobile: '9876543211',
-          password: mgrHash,
-          role: 'manager',
-          address: 'उरई, जालौन',
           is_active: 1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()

@@ -3,16 +3,18 @@ import { SectionHeader, AashrayLogo } from '../components/KrishnaAccents';
 import { StatusBadge } from '../components/StatusBadge';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { ImageUploader } from '../components/ImageUploader';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import type {
   User, Need, MealRequest, VolunteerRegistration, AssistanceRequest,
   Event, ContactSubmission, DashboardStats
 } from '../types';
 import {
-  Plus, Search, Edit, Trash2, Send, Download, Lock, KeyRound
+  Plus, Search, Edit, Trash2, Send, Download, Lock, KeyRound, RotateCw
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
+  const { login } = useAuth();
   const [isPasswordVerified, setIsPasswordVerified] = useState<boolean>(() => {
     return sessionStorage.getItem('admin_pwd_verified') === 'true';
   });
@@ -26,7 +28,6 @@ export const AdminDashboard: React.FC = () => {
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [usersList, setUsersList] = useState<User[]>([]);
-  const [managersList, setManagersList] = useState<User[]>([]);
   const [mealsList, setMealsList] = useState<MealRequest[]>([]);
   const [volunteersList, setVolunteersList] = useState<VolunteerRegistration[]>([]);
   const [assistanceList, setAssistanceList] = useState<AssistanceRequest[]>([]);
@@ -48,14 +49,19 @@ export const AdminDashboard: React.FC = () => {
     try {
       const res = await api.post('/auth/login', { password: adminPasswordInput.trim() });
       if (res.data.success && res.data.user.role === 'admin') {
+        localStorage.setItem('aashray_token', res.data.token);
+        localStorage.setItem('aashray_user', JSON.stringify(res.data.user));
         sessionStorage.setItem('admin_pwd_verified', 'true');
+        if (login) login(res.data.token, res.data.user);
         setIsPasswordVerified(true);
-        fetchDashboardData();
+        setTimeout(() => {
+          fetchDashboardData();
+        }, 50);
       } else {
         setPwdError('गलत पासवर्ड! केवल अधिकृत एडमिन पासवर्ड दर्ज करें।');
       }
     } catch (err: any) {
-      setPwdError(err.response?.data?.message || 'गलत प्रशासक पासवर्ड! पहुंच अस्वीकृत।');
+      setPwdError(err.response?.data?.message || 'गलत प्रशासक पासवर्ड! (उदा. radhe radhe)');
     } finally {
       setVerifyingPwd(false);
     }
@@ -108,10 +114,9 @@ export const AdminDashboard: React.FC = () => {
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
-      const [statsRes, usersRes, mgrsRes, mealsRes, volRes, astRes, needsRes, evtsRes, contactsRes] = await Promise.allSettled([
+      const [statsRes, usersRes, mealsRes, volRes, astRes, needsRes, evtsRes, contactsRes] = await Promise.allSettled([
         api.get('/admin/stats'),
         api.get('/admin/users?role=user'),
-        api.get('/admin/users?role=manager'),
         api.get('/meals'),
         api.get('/volunteers'),
         api.get('/assistance'),
@@ -122,7 +127,6 @@ export const AdminDashboard: React.FC = () => {
 
       if (statsRes.status === 'fulfilled' && statsRes.value.data.success) setStats(statsRes.value.data.stats || null);
       if (usersRes.status === 'fulfilled' && usersRes.value.data.success) setUsersList(usersRes.value.data.users || []);
-      if (mgrsRes.status === 'fulfilled' && mgrsRes.value.data.success) setManagersList(mgrsRes.value.data.users || []);
       if (mealsRes.status === 'fulfilled' && mealsRes.value.data.success) setMealsList(mealsRes.value.data.requests || []);
       if (volRes.status === 'fulfilled' && volRes.value.data.success) setVolunteersList(volRes.value.data.registrations || []);
       if (astRes.status === 'fulfilled' && astRes.value.data.success) setAssistanceList(astRes.value.data.requests || []);
@@ -205,12 +209,12 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-  // Assistance Status & Assign Action
-  const handleUpdateAssistance = async (id: number, status: string, managerId?: number) => {
+  // Assistance Status Action
+  const handleUpdateAssistance = async (id: number, status: string) => {
     try {
-      const res = await api.put(`/assistance/${id}/status`, { status, assigned_manager_id: managerId });
+      const res = await api.put(`/assistance/${id}/status`, { status });
       if (res.data.success) {
-        showNotification(`बुजुर्ग सहायता अनुरोध अद्यतन हो गया!`);
+        showNotification(`बुजुर्ग सहायता अनुरोध स्थिति '${status}' कर दी गई!`);
         fetchDashboardData();
       }
     } catch (err: any) {
@@ -483,10 +487,21 @@ export const AdminDashboard: React.FC = () => {
         onCancel={() => setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} })}
       />
 
-      <SectionHeader
-        title={`व्यवस्थापक डैशबोर्ड (Admin Panel)`}
-        subtitle="संपूर्ण आश्रय वृद्धाश्रम प्रणाली का नियंत्रण, डेटाबेस आंकड़े, उपयोगकर्ता, आवश्यकताएँ व रिपोर्ट।"
-      />
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <SectionHeader
+          title={`व्यवस्थापक डैशबोर्ड (Admin Panel)`}
+          subtitle="संपूर्ण आश्रय वृद्धाश्रम प्रणाली का नियंत्रण, डेटाबेस आंकड़े, फॉर्म्स व रिपोर्ट।"
+        />
+        <button
+          onClick={fetchDashboardData}
+          disabled={loading}
+          className="btn-secondary text-sm py-2 px-4 flex items-center gap-2 shadow-md cursor-pointer self-end sm:self-auto"
+          title="ताज़ा डेटा लोड करें"
+        >
+          <RotateCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <span>डेटा रिफ्रेश करें</span>
+        </button>
+      </div>
 
       {actionMsg && (
         <div className="p-4 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 border border-emerald-300 font-bold text-center shadow-md">
@@ -768,8 +783,10 @@ export const AdminDashboard: React.FC = () => {
                   <th className="p-3">आईडी</th>
                   <th className="p-3">स्वयंसेवक नाम</th>
                   <th className="p-3">मोबाइल</th>
+                  <th className="p-3">ईमेल / पता</th>
                   <th className="p-3">सेवा तिथि</th>
-                  <th className="p-3">प्रकार</th>
+                  <th className="p-3">सेवा प्रकार</th>
+                  <th className="p-3">संदेश</th>
                   <th className="p-3">स्थिति</th>
                   <th className="p-3 text-right">कार्रवाई</th>
                 </tr>
@@ -779,30 +796,42 @@ export const AdminDashboard: React.FC = () => {
                   <tr key={v.id} className="hover:bg-cream/40 dark:hover:bg-slate-800">
                     <td className="p-3 font-bold">#{v.id}</td>
                     <td className="p-3 font-bold">{v.full_name}</td>
-                    <td className="p-3">{v.mobile}</td>
-                    <td className="p-3 font-semibold">{v.preferred_date}</td>
-                    <td className="p-3">{v.help_type}</td>
+                    <td className="p-3 font-semibold">{v.mobile}</td>
+                    <td className="p-3 text-xs">
+                      <div>{v.email || 'ईमेल नहीं'}</div>
+                      <div className="text-slate-500 text-[11px]">{v.address || ''}</div>
+                    </td>
+                    <td className="p-3 font-semibold text-saffron">{v.preferred_date}</td>
+                    <td className="p-3 font-medium">{v.help_type}</td>
+                    <td className="p-3 text-xs max-w-xs truncate" title={v.message}>{v.message || '-'}</td>
                     <td className="p-3"><StatusBadge status={v.status} /></td>
-                    <td className="p-3 text-right space-x-1">
-                      {v.status === 'लंबित' && (
+                    <td className="p-3 text-right space-x-1 whitespace-nowrap">
+                      {v.status === 'लंबित' ? (
                         <>
                           <button
                             onClick={() => handleUpdateVolunteerStatus(v.id, 'स्वीकार किया गया')}
-                            className="px-2 py-1 bg-emerald-600 text-white rounded font-bold text-xs cursor-pointer"
+                            className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-xs cursor-pointer shadow-sm"
                           >
                             स्वीकार
                           </button>
                           <button
                             onClick={() => handleUpdateVolunteerStatus(v.id, 'अस्वीकार किया गया')}
-                            className="px-2 py-1 bg-amber-600 text-white rounded font-bold text-xs cursor-pointer"
+                            className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold text-xs cursor-pointer shadow-sm ml-1"
                           >
                             अस्वीकार
                           </button>
                         </>
+                      ) : (
+                        <button
+                          onClick={() => handleUpdateVolunteerStatus(v.id, 'पूर्ण')}
+                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs cursor-pointer shadow-sm"
+                        >
+                          पूर्ण
+                        </button>
                       )}
                       <button
                         onClick={() => handleDeleteVolunteer(v.id, v.full_name)}
-                        className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold text-xs cursor-pointer ml-1 inline-flex items-center gap-1"
+                        className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold text-xs cursor-pointer ml-1 inline-flex items-center gap-1 shadow-sm"
                       >
                         <Trash2 className="w-3 h-3" /> हटाएं
                       </button>
@@ -823,10 +852,11 @@ export const AdminDashboard: React.FC = () => {
                 <tr>
                   <th className="p-3">आईडी</th>
                   <th className="p-3">बुजुर्ग नाम</th>
+                  <th className="p-3">आयु</th>
                   <th className="p-3">संपर्क</th>
                   <th className="p-3">स्थान</th>
                   <th className="p-3">आवश्यक सहायता</th>
-                  <th className="p-3">आवंटित प्रबंधक</th>
+                  <th className="p-3">सहायता विवरण</th>
                   <th className="p-3">स्थिति</th>
                   <th className="p-3 text-right">कार्रवाई</th>
                 </tr>
@@ -836,34 +866,39 @@ export const AdminDashboard: React.FC = () => {
                   <tr key={a.id} className="hover:bg-cream/40 dark:hover:bg-slate-800">
                     <td className="p-3 font-bold">#{a.id}</td>
                     <td className="p-3 font-bold">{a.elderly_name}</td>
-                    <td className="p-3">{a.contact_number}</td>
-                    <td className="p-3">{a.address}</td>
-                    <td className="p-3">{a.assistance_type}</td>
-                    <td className="p-3 text-xs">
-                      <select
-                        value={a.assigned_manager_id || ''}
-                        onChange={(e) => handleUpdateAssistance(a.id, a.status, parseInt(e.target.value, 10) || undefined)}
-                        className="p-1 border rounded bg-amber-50 text-xs font-bold"
-                      >
-                        <option value="">-- प्रबंधक चुनें --</option>
-                        {managersList.map(m => (
-                          <option key={m.id} value={m.id}>{m.name}</option>
-                        ))}
-                      </select>
-                    </td>
+                    <td className="p-3">{a.elderly_age ? `${a.elderly_age} वर्ष` : '-'}</td>
+                    <td className="p-3 font-semibold">{a.contact_number}</td>
+                    <td className="p-3 text-xs">{a.address}</td>
+                    <td className="p-3 font-semibold text-maroon dark:text-gold">{a.assistance_type}</td>
+                    <td className="p-3 text-xs max-w-xs truncate" title={a.description}>{a.description || '-'}</td>
                     <td className="p-3"><StatusBadge status={a.status} /></td>
-                    <td className="p-3 text-right space-x-1">
-                      {a.status === 'लंबित' && (
+                    <td className="p-3 text-right space-x-1 whitespace-nowrap">
+                      {a.status === 'लंबित' ? (
+                        <>
+                          <button
+                            onClick={() => handleUpdateAssistance(a.id, 'स्वीकार किया गया')}
+                            className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-xs cursor-pointer shadow-sm"
+                          >
+                            स्वीकार
+                          </button>
+                          <button
+                            onClick={() => handleUpdateAssistance(a.id, 'अस्वीकार किया गया')}
+                            className="px-2 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded font-bold text-xs cursor-pointer shadow-sm ml-1"
+                          >
+                            अस्वीकार
+                          </button>
+                        </>
+                      ) : (
                         <button
-                          onClick={() => handleUpdateAssistance(a.id, 'स्वीकार किया गया')}
-                          className="px-2 py-1 bg-emerald-600 text-white rounded font-bold text-xs cursor-pointer"
+                          onClick={() => handleUpdateAssistance(a.id, 'पूर्ण')}
+                          className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded font-bold text-xs cursor-pointer shadow-sm"
                         >
-                          स्वीकार
+                          पूर्ण
                         </button>
                       )}
                       <button
                         onClick={() => handleDeleteAssistance(a.id, a.elderly_name)}
-                        className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold text-xs cursor-pointer ml-1 inline-flex items-center gap-1"
+                        className="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold text-xs cursor-pointer ml-1 inline-flex items-center gap-1 shadow-sm"
                       >
                         <Trash2 className="w-3 h-3" /> हटाएं
                       </button>

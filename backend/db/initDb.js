@@ -351,16 +351,10 @@ const db = {
 
   async seedDatabase() {
     const adminPasswordHash = await bcrypt.hash('radhe radhe', 10);
-    const mgrHash = await bcrypt.hash('manager123', 10);
 
     await this.query(
       `INSERT INTO users (id, name, email, mobile, password, role, address, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [1, 'मुख्य प्रशासक (Admin)', 'admin@aashray.org', '6306638958', adminPasswordHash, 'admin', 'आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)', 1]
-    );
-
-    await this.query(
-      `INSERT INTO users (id, name, email, mobile, password, role, address, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [2, 'राजेश शर्मा (प्रबंधक)', 'rajesh@aashray.org', '9876543211', mgrHash, 'manager', 'उरई, जालौन', 1]
     );
 
     const facilitiesJson = JSON.stringify([
