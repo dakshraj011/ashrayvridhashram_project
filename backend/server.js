@@ -105,17 +105,40 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Initialize DB and start server
-db.init().then(() => {
-  app.listen(PORT, '0.0.0.0', () => {
+// Safety handlers for cloud deployments
+process.on('uncaughtException', (err) => {
+  console.error('💥 [CRASH GUARD] Uncaught Exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('⚠️ [CRASH GUARD] Unhandled Rejection:', reason);
+});
+
+// Start Express server and initialize database
+async function startServer() {
+  try {
+    await db.init();
+    console.log('✅ [DB] Database initialization complete.');
+  } catch (err) {
+    console.error('⚠️ [DB] Non-fatal DB Init warning:', err.message || err);
+  }
+
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
     console.log(`🛕 आश्रय (AASHRAY) सर्वर चालू है! (PORT: ${PORT})`);
-    console.log(`🔗 API Base: http://localhost:${PORT}/api`);
+    console.log(`🔗 API Base: http://0.0.0.0:${PORT}/api`);
     if (frontendDist) {
-      console.log(`🌐 Web App:  http://localhost:${PORT}`);
+      console.log(`🌐 Web App:  http://0.0.0.0:${PORT}`);
     }
     console.log(`====================================================`);
   });
-}).catch(err => {
-  console.error('Fatal DB Init Error:', err);
+
+  return server;
+}
+
+startServer().catch(err => {
+  console.error('Fatal startup error, fallback listening:', err);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`⚠️ Fallback server listening on port ${PORT}`);
+  });
 });
+

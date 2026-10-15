@@ -48,9 +48,10 @@ const db = {
       useSsl = true;
     }
 
-    // If explicit sqlite driver requested, skip MySQL
-    if (preferredDriver === 'sqlite') {
-      console.log('🔄 [DB] DB_DRIVER is set to sqlite. Initializing embedded SQLite database (aashray.db)...');
+    // In cloud production or when no MySQL host/URL is specified, default directly to SQLite
+    const hasExplicitMySQL = Boolean(rawUri || process.env.DB_HOST);
+    if (preferredDriver === 'sqlite' || (!hasExplicitMySQL && preferredDriver !== 'mysql')) {
+      console.log('🔄 [DB] Initializing embedded SQLite database (aashray.db)...');
       dbDriver = 'sqlite';
       this.driver = 'sqlite';
       await this.initSQLite();
