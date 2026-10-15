@@ -42,14 +42,18 @@ const createEvent = async (req, res) => {
       return res.status(400).json({ success: false, message: 'कृपया शीर्षक, तिथि और विवरण दर्ज करें।' });
     }
 
-    // Determine primary cover photo
+    // Determine photos (up to 5 photos)
     let photoList = [];
     if (Array.isArray(images) && images.length > 0) {
       photoList = images.filter(img => typeof img === 'string' && img.trim() !== '');
     } else if (typeof images === 'string' && images.trim() !== '') {
       photoList = images.split(',').map(s => s.trim()).filter(Boolean);
+    } else if (image_url) {
+      photoList = [image_url];
     }
 
+    // Limit to at most 5 photos
+    photoList = photoList.slice(0, 5);
     const primaryImage = photoList[0] || image_url || null;
 
     const result = await db.query(
@@ -60,12 +64,8 @@ const createEvent = async (req, res) => {
 
     const eventId = result.insertId;
 
-    // Insert all provided photos into gallery_images
-    const allToInsert = new Set();
-    if (primaryImage) allToInsert.add(primaryImage);
-    photoList.forEach(p => allToInsert.add(p));
-
-    for (const imgUrl of allToInsert) {
+    // Insert all provided photos (up to 5) into gallery_images
+    for (const imgUrl of photoList) {
       await db.query(
         `INSERT INTO gallery_images (event_id, title, image_url, category) VALUES (?, ?, ?, 'कार्यक्रम')`,
         [eventId, title, imgUrl]

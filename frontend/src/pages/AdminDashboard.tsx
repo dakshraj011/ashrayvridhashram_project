@@ -3,6 +3,7 @@ import { SectionHeader, AashrayLogo } from '../components/KrishnaAccents';
 import { StatusBadge } from '../components/StatusBadge';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { ImageUploader } from '../components/ImageUploader';
+import { MultiImageUploader } from '../components/MultiImageUploader';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import type {
@@ -97,11 +98,18 @@ export const AdminDashboard: React.FC = () => {
 
   // Add Event State
   const [showEventModal, setShowEventModal] = useState(false);
-  const [eventForm, setEventForm] = useState({
+  const [eventForm, setEventForm] = useState<{
+    title: string;
+    event_date: string;
+    description: string;
+    image_url: string;
+    images: string[];
+  }>({
     title: '',
     event_date: '',
     description: '',
-    image_url: ''
+    image_url: '',
+    images: []
   });
 
   // Broadcast Announcement State
@@ -345,10 +353,15 @@ export const AdminDashboard: React.FC = () => {
   const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/events', eventForm);
-      showNotification('नया कार्यक्रम जोड़ा गया!');
+      const primaryCover = eventForm.images[0] || eventForm.image_url || '';
+      await api.post('/events', {
+        ...eventForm,
+        image_url: primaryCover,
+        images: eventForm.images.length > 0 ? eventForm.images : (primaryCover ? [primaryCover] : [])
+      });
+      showNotification('नया कार्यक्रम एवं तस्वीरें (अधिकतम 5) सफलतापूर्वक जोड़ी गईं!');
       setShowEventModal(false);
-      setEventForm({ title: '', event_date: '', description: '', image_url: '' });
+      setEventForm({ title: '', event_date: '', description: '', image_url: '', images: [] });
       fetchDashboardData();
     } catch (err) {
       showNotification('कार्यक्रम जोड़ने में त्रुटि।');
@@ -1098,14 +1111,28 @@ export const AdminDashboard: React.FC = () => {
                 ></textarea>
               </div>
 
-              <ImageUploader
-                label="कार्यक्रम फोटो अपलोड करें"
-                defaultUrl={eventForm.image_url}
-                onImageUploaded={(url) => setEventForm({ ...eventForm, image_url: url })}
+              <MultiImageUploader
+                label="कार्यक्रम की तस्वीरें अपलोड करें (अधिकतम 5 फ़ोटो)"
+                maxPhotos={5}
+                images={eventForm.images}
+                onChange={(urls) => setEventForm({
+                  ...eventForm,
+                  images: urls,
+                  image_url: urls[0] || ''
+                })}
               />
 
               <div className="flex gap-2 justify-end">
-                <button type="button" onClick={() => setShowEventModal(false)} className="px-4 py-2 font-bold text-slate-600">रद्द करें</button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEventModal(false);
+                    setEventForm({ title: '', event_date: '', description: '', image_url: '', images: [] });
+                  }}
+                  className="px-4 py-2 font-bold text-slate-600"
+                >
+                  रद्द करें
+                </button>
                 <button type="submit" className="btn-secondary text-sm py-2 px-6">सहेजें</button>
               </div>
             </form>
