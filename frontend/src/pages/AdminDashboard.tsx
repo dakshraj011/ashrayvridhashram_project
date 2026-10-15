@@ -127,12 +127,12 @@ export const AdminDashboard: React.FC = () => {
 
       if (statsRes.status === 'fulfilled' && statsRes.value.data.success) setStats(statsRes.value.data.stats || null);
       if (usersRes.status === 'fulfilled' && usersRes.value.data.success) setUsersList(usersRes.value.data.users || []);
-      if (mealsRes.status === 'fulfilled' && mealsRes.value.data.success) setMealsList(mealsRes.value.data.requests || []);
-      if (volRes.status === 'fulfilled' && volRes.value.data.success) setVolunteersList(volRes.value.data.registrations || []);
-      if (astRes.status === 'fulfilled' && astRes.value.data.success) setAssistanceList(astRes.value.data.requests || []);
+      if (mealsRes.status === 'fulfilled' && mealsRes.value.data.success) setMealsList(mealsRes.value.data.requests || mealsRes.value.data.meals || []);
+      if (volRes.status === 'fulfilled' && volRes.value.data.success) setVolunteersList(volRes.value.data.registrations || volRes.value.data.volunteers || []);
+      if (astRes.status === 'fulfilled' && astRes.value.data.success) setAssistanceList(astRes.value.data.requests || astRes.value.data.assistance || []);
       if (needsRes.status === 'fulfilled' && needsRes.value.data.success) setNeedsList(needsRes.value.data.needs || []);
       if (evtsRes.status === 'fulfilled' && evtsRes.value.data.success) setEventsList(evtsRes.value.data.events || []);
-      if (contactsRes.status === 'fulfilled' && contactsRes.value.data.success) setContactsList(contactsRes.value.data.messages || []);
+      if (contactsRes.status === 'fulfilled' && contactsRes.value.data.success) setContactsList(contactsRes.value.data.messages || contactsRes.value.data.submissions || []);
     } catch (err) {
       console.error('Admin data fetch error:', err);
     } finally {
