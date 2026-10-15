@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-// Support VITE_API_URL if configured for separate frontend/backend deployments
-const RAW_API_URL = import.meta.env.VITE_API_URL || '';
+// Support VITE_API_URL or auto-fallback to live Render backend on GitHub Pages
+const DEFAULT_PROD_API = 'https://ashrayvridhashram-project-1dakshrajsingh.onrender.com';
+const isGitHubPages = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+const RAW_API_URL = import.meta.env.VITE_API_URL || (isGitHubPages ? DEFAULT_PROD_API : '');
 export const API_ROOT = RAW_API_URL.replace(/\/$/, '');
 export const API_BASE = API_ROOT ? `${API_ROOT}/api` : '/api';
 
