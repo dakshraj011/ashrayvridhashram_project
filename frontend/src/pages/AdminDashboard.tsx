@@ -62,7 +62,7 @@ export const AdminDashboard: React.FC = () => {
         setPwdError('गलत पासवर्ड! केवल अधिकृत एडमिन पासवर्ड दर्ज करें।');
       }
     } catch (err: any) {
-      setPwdError(err.response?.data?.message || 'गलत प्रशासक पासवर्ड! (उदा. radhe radhe)');
+      setPwdError(err.response?.data?.message || 'गलत प्रशासक पासवर्ड! (उदा. hare krishna)');
     } finally {
       setVerifyingPwd(false);
     }

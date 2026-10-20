@@ -350,17 +350,17 @@ const db = {
   },
 
   async seedDatabase() {
-    const adminPasswordHash = await bcrypt.hash('radhe radhe', 10);
+    const adminPasswordHash = await bcrypt.hash('hare krishna', 10);
 
     await this.query(
       `INSERT INTO users (id, name, email, mobile, password, role, address, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [1, 'मुख्य प्रशासक (Admin)', 'admin@aashray.org', '6306638958', adminPasswordHash, 'admin', 'आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)', 1]
+      [1, 'मुख्य प्रशासक (Admin)', 'admin@aashray.org', '6306638958', adminPasswordHash, 'admin', 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)', 1]
     );
 
     const facilitiesJson = JSON.stringify([
       "24x7 स्वास्थ्य देखभाल एवं डॉक्टर परामर्श",
       "सात्विक एवं पौष्टिक भोजन",
-      "वातानुकूलित (AC) और आरामदायक कमरे",
+      "हवादार एवं आरामदायक कमरे",
       "दैनिक योग, ध्यान एवं श्री कृष्ण संकीर्तन",
       "पुस्तकालय एवं मनोरंजन कक्ष",
       "धार्मिक एवं सांस्कृतिक यात्राएँ"
@@ -378,9 +378,9 @@ const db = {
         'आश्रय वृद्धाश्रम',
         'वरिष्ठ नागरिकों का अपना स्नेहपूर्ण एवं सुरक्षित धाम',
         'आश्रय वृद्धाश्रम उरई (जालौन) में असहाय, बेघर एवं वरिष्ठ नागरिकों की सेवा और देखभाल के लिए समर्पित एक गैर-लाभकारी संस्था है। यहाँ बुजुर्गों को सात्विक भोजन, नियमित स्वास्थ्य देखभाल, योगाभ्यास, भक्ति भजन और आत्मीय परिवार जैसा वातावरण प्रदान किया जाता है।',
-        '108, आश्रय धाम, स्टेशन रोड, उरई - 285001, जिला जालौन (उत्तर प्रदेश)',
-        '+91 6306638958 / 05162-250108',
-        'info@aashray.org',
+        'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)',
+        '7860437507',
+        'dakshrajs104@gmail.com',
         facilitiesJson,
         'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?auto=format&fit=crop&w=1200&q=80',
         aboutImagesJson
@@ -446,27 +446,38 @@ const db = {
 
   async ensureAdminUser() {
     try {
-      const adminPasswordHash = await bcrypt.hash('radhe radhe', 10);
+      const adminPasswordHash = await bcrypt.hash('hare krishna', 10);
       const existingAdmin = await this.query('SELECT * FROM users WHERE mobile = ? OR role = ?', ['6306638958', 'admin']);
       if (existingAdmin && existingAdmin.length > 0) {
         await this.query(
-          `UPDATE users SET name = ?, mobile = ?, password = ?, role = 'admin', is_active = 1 WHERE id = ?`,
-          ['मुख्य प्रशासक (Admin)', '6306638958', adminPasswordHash, existingAdmin[0].id]
+          `UPDATE users SET name = ?, mobile = ?, password = ?, role = 'admin', is_active = 1, address = ? WHERE id = ?`,
+          ['मुख्य प्रशासक (Admin)', '6306638958', adminPasswordHash, 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)', existingAdmin[0].id]
         );
       } else {
         await this.query(
           `INSERT INTO users (name, email, mobile, password, role, address, is_active) VALUES (?, ?, ?, ?, 'admin', ?, 1)`,
-          ['मुख्य प्रशासक (Admin)', 'admin@aashray.org', '6306638958', adminPasswordHash, 'आश्रय धाम, उरई (जालौन)']
+          ['मुख्य प्रशासक (Admin)', 'admin@aashray.org', '6306638958', adminPasswordHash, 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)']
         );
       }
 
-      // Update home_information table to Orai, Jalaun
+      // Update home_information table
+      const facilitiesJson = JSON.stringify([
+        "24x7 स्वास्थ्य देखभाल एवं डॉक्टर परामर्श",
+        "सात्विक एवं पौष्टिक भोजन",
+        "हवादार एवं आरामदायक कमरे",
+        "दैनिक योग, ध्यान एवं श्री कृष्ण संकीर्तन",
+        "पुस्तकालय एवं मनोरंजन कक्ष",
+        "धार्मिक एवं सांस्कृतिक यात्राएँ"
+      ]);
+
       await this.query(
-        `UPDATE home_information SET address = ?, description = ?, phone = ? WHERE id = 1`,
+        `UPDATE home_information SET address = ?, description = ?, phone = ?, email = ?, facilities = ? WHERE id = 1`,
         [
-          '108, आश्रय धाम, स्टेशन रोड, उरई - 285001, जिला जालौन (उत्तर प्रदेश)',
+          'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)',
           'आश्रय वृद्धाश्रम उरई (जालौन) में असहाय, बेघर एवं वरिष्ठ नागरिकों की सेवा और देखभाल के लिए समर्पित एक गैर-लाभकारी संस्था है। यहाँ बुजुर्गों को सात्विक भोजन, नियमित स्वास्थ्य देखभाल, योगाभ्यास, भक्ति भजन और आत्मीय परिवार जैसा वातावरण प्रदान किया जाता है।',
-          '+91 6306638958 / 05162-250108'
+          '7860437507',
+          'dakshrajs104@gmail.com',
+          facilitiesJson
         ]
       );
 

@@ -10,6 +10,7 @@ export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [tappedPath, setTappedPath] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -19,6 +20,23 @@ export const Navbar: React.FC = () => {
   };
 
   const isActive = (path: string) => location.pathname === path;
+
+  const navLinks = [
+    { name: 'होम (Home)', path: '/' },
+    { name: 'हमारे बारे में (About Us)', path: '/about' },
+    { name: 'वर्तमान आवश्यकताएँ (Needs)', path: '/needs' },
+    { name: 'कार्यक्रम एवं गैलरी (Gallery)', path: '/events' },
+    { name: 'संपर्क करें (Contact Us)', path: '/contact' },
+    { name: 'व्यवस्थापक डैशबोर्ड (Admin)', path: '/admin' }
+  ];
+
+  const handleMobileNavClick = (path: string) => {
+    setTappedPath(path);
+    setTimeout(() => {
+      setIsMenuOpen(false);
+      setTappedPath(null);
+    }, 180);
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b-2 border-gold/40 shadow-md">
@@ -138,61 +156,63 @@ export const Navbar: React.FC = () => {
 
       {/* Mobile Drawer Navigation */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-white dark:bg-slate-900 border-b-2 border-gold/40 px-4 pt-2 pb-6 space-y-3 font-semibold">
-          <Link
-            to="/"
-            onClick={() => setIsMenuOpen(false)}
-            className="block py-2 text-slate-800 dark:text-slate-100 hover:text-saffron"
-          >
-            होम
-          </Link>
-          <Link
-            to="/about"
-            onClick={() => setIsMenuOpen(false)}
-            className="block py-2 text-slate-800 dark:text-slate-100 hover:text-saffron"
-          >
-            हमारे बारे में
-          </Link>
-          <Link
-            to="/needs"
-            onClick={() => setIsMenuOpen(false)}
-            className="block py-2 text-slate-800 dark:text-slate-100 hover:text-saffron"
-          >
-            वर्तमान आवश्यकताएँ
-          </Link>
-          <Link
-            to="/events"
-            onClick={() => setIsMenuOpen(false)}
-            className="block py-2 text-slate-800 dark:text-slate-100 hover:text-saffron"
-          >
-            कार्यक्रम एवं गैलरी
-          </Link>
-          <Link
-            to="/contact"
-            onClick={() => setIsMenuOpen(false)}
-            className="block py-2 text-slate-800 dark:text-slate-100 hover:text-saffron"
-          >
-            संपर्क करें
-          </Link>
-          <Link
-            to="/admin"
-            onClick={() => setIsMenuOpen(false)}
-            className="block py-2 text-saffron dark:text-gold font-bold"
-          >
-            व्यवस्थापक डैशबोर्ड
-          </Link>
+        <div className="lg:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b-2 border-gold/40 px-4 pt-3 pb-6 space-y-2 font-semibold shadow-2xl animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider px-2 pb-1 flex items-center justify-between">
+            <span>नेविगेशन मेनू</span>
+            <span className="text-[10px] text-saffron font-bold">आश्रय धाम</span>
+          </div>
 
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
+          {navLinks.map((link) => {
+            const isSelected = isActive(link.path);
+            const isTapped = tappedPath === link.path;
+
+            return (
+              <Link
+                key={link.path}
+                to={link.path}
+                onClick={() => handleMobileNavClick(link.path)}
+                className={`mobile-nav-item flex items-center justify-between px-4 py-3 rounded-xl font-bold transition-all duration-200 select-none cursor-pointer ${
+                  isTapped
+                    ? 'bg-[#E87924] text-[#FFF6E9] scale-[0.98] shadow-md border-l-4 border-[#D9AA55]'
+                    : isSelected
+                    ? 'bg-[#FFF6E9] dark:bg-[#852D36]/40 text-[#852D36] dark:text-[#D9AA55] border-l-4 border-[#E87924] shadow-sm'
+                    : 'text-slate-800 dark:text-slate-100 border-l-4 border-transparent hover:bg-[#FFF6E9]/70 dark:hover:bg-slate-800 hover:text-[#852D36] dark:hover:text-[#D9AA55] active:bg-[#E87924] active:text-[#FFF6E9] active:scale-[0.98]'
+                }`}
+              >
+                <span className="flex items-center gap-2.5">
+                  {isSelected && (
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#E87924] dark:bg-[#D9AA55] animate-pulse flex-shrink-0" />
+                  )}
+                  <span className="text-base">{link.name}</span>
+                </span>
+
+                {isSelected ? (
+                  <span className="text-xs bg-[#E87924]/15 dark:bg-[#D9AA55]/20 text-[#E87924] dark:text-[#D9AA55] px-2.5 py-0.5 rounded-full font-bold border border-[#E87924]/20 shadow-xs">
+                    चयनित
+                  </span>
+                ) : (
+                  <span className="text-slate-400 text-sm">→</span>
+                )}
+              </Link>
+            );
+          })}
+
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
             <Link
               to="/admin"
-              onClick={() => setIsMenuOpen(false)}
-              className="btn-secondary w-full text-center text-sm py-2.5 flex items-center justify-center gap-2"
+              onClick={() => handleMobileNavClick('/admin')}
+              className={`btn-secondary w-full text-center text-sm py-2.5 flex items-center justify-center gap-2 transition-transform active:scale-[0.98] ${
+                isActive('/admin') ? 'ring-2 ring-[#D9AA55]' : ''
+              }`}
             >
               <ShieldCheck className="w-4 h-4 text-gold" />
               व्यवस्थापक डैशबोर्ड (Admin Dashboard)
             </Link>
             {user && (
-              <button onClick={handleLogout} className="w-full text-center py-2 text-rose-600 font-bold cursor-pointer">
+              <button
+                onClick={handleLogout}
+                className="w-full text-center py-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl font-bold transition-colors cursor-pointer text-sm"
+              >
                 लॉग आउट करें
               </button>
             )}

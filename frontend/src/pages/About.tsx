@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SectionHeader, PeacockFeatherIcon } from '../components/KrishnaAccents';
 import api from '../services/api';
 import type { HomeInfo } from '../types';
-import { Heart, ShieldCheck, Sun, Sparkles, CheckCircle2, Phone, Mail, MapPin, Code2, ExternalLink } from 'lucide-react';
+import { Heart, ShieldCheck, Sun, Sparkles, CheckCircle2, Phone, Mail, MapPin, Code2, ExternalLink, UserCheck, PhoneCall } from 'lucide-react';
 import developerPhoto from '../assets/developer-daksh.jpg';
 
 const GithubIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
@@ -53,7 +53,16 @@ export const About: React.FC = () => {
     return [];
   };
 
-  const facilitiesList = safeParseArray(info?.facilities);
+  const rawFacilities = safeParseArray(info?.facilities);
+  const facilitiesList = (rawFacilities.length > 0 ? rawFacilities : [
+    "24x7 स्वास्थ्य देखभाल एवं डॉक्टर परामर्श",
+    "सात्विक एवं पौष्टिक भोजन",
+    "हवादार एवं आरामदायक कमरे",
+    "दैनिक योग, ध्यान एवं श्री कृष्ण संकीर्तन",
+    "पुस्तकालय एवं मनोरंजन कक्ष",
+    "धार्मिक एवं सांस्कृतिक यात्राएँ"
+  ]).map((f: string) => f.replace(/वातानुकूलित\s*\(AC\)\s*(और|एवं)?\s*/gi, 'हवादार एवं '));
+
   const aboutImagesList = safeParseArray(info?.about_images);
 
   return (
@@ -73,21 +82,41 @@ export const About: React.FC = () => {
             {info?.name || 'आश्रय वृद्धाश्रम'}
           </h2>
           <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
-            {info?.description || 'आश्रय वृद्धाश्रम श्री कृष्ण की पावन नगरी में असहाय, बेघर एवं वरिष्ठ नागरिकों की सेवा और देखभाल के लिए समर्पित एक गैर-लाभकारी संस्था है।'}
+            {info?.description || 'आश्रय वृद्धाश्रम उरई (जालौन) में असहाय, बेघर एवं वरिष्ठ नागरिकों की सेवा और देखभाल के लिए समर्पित एक गैर-लाभकारी संस्था है। यहाँ बुजुर्गों को सात्विक भोजन, नियमित स्वास्थ्य देखभाल, योगाभ्यास, भक्ति भजन और आत्मीय परिवार जैसा वातावरण प्रदान किया जाता है।'}
           </p>
 
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2.5 text-sm text-slate-700 dark:text-slate-300">
             <p className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-saffron flex-shrink-0" />
-              <span><strong>पता:</strong> {info?.address}</span>
+              <span><strong>पता:</strong> {info?.address || 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)'}</span>
+            </p>
+            <p className="flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-saffron flex-shrink-0" />
+              <span>
+                <strong>आश्रम प्रबंधक:</strong> संदीप कुमार सिंह (
+                <a href="tel:7860437507" className="text-saffron hover:underline font-bold transition-colors">
+                  7860437507
+                </a>
+                )
+              </span>
             </p>
             <p className="flex items-center gap-2">
               <Phone className="w-5 h-5 text-saffron flex-shrink-0" />
-              <span><strong>दूरभाष:</strong> {info?.phone}</span>
+              <span>
+                <strong>दूरभाष:</strong>{' '}
+                <a href={`tel:${info?.phone || '7860437507'}`} className="hover:text-saffron font-bold transition-colors">
+                  {info?.phone || '7860437507'}
+                </a>
+              </span>
             </p>
             <p className="flex items-center gap-2">
               <Mail className="w-5 h-5 text-saffron flex-shrink-0" />
-              <span><strong>ईमेल:</strong> {info?.email}</span>
+              <span>
+                <strong>ईमेल:</strong>{' '}
+                <a href={`mailto:${info?.email || 'dakshrajs104@gmail.com'}`} className="hover:text-saffron font-bold transition-colors">
+                  {info?.email || 'dakshrajs104@gmail.com'}
+                </a>
+              </span>
             </p>
           </div>
         </div>
@@ -98,6 +127,42 @@ export const About: React.FC = () => {
             alt="आश्रय परिसर"
             className="rounded-2xl border-4 border-gold shadow-lg w-full h-[380px] object-cover"
           />
+        </div>
+      </div>
+
+      {/* ASHRAM MANAGER & LEADERSHIP HIGHLIGHT */}
+      <div className="bg-gradient-to-r from-amber-50/80 via-white to-orange-50/70 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-6 sm:p-8 rounded-3xl border-2 border-gold/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-5">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-maroon to-saffron text-gold flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-gold/60">
+            <UserCheck className="w-9 h-9 sm:w-11 sm:h-11 text-gold" />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-saffron bg-saffron/10 px-3 py-0.5 rounded-full border border-saffron/20">
+                ॥ आश्रम प्रबंधन एवं व्यवस्था ॥
+              </span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-maroon dark:text-gold font-heading">
+              संदीप कुमार सिंह
+            </h3>
+            <p className="text-sm sm:text-base font-semibold text-slate-700 dark:text-slate-300">
+              आश्रम व्यवस्थापक एवं प्रबंधक (Ashram Manager)
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              आश्रम संचालन, आवास एवं बुजुर्ग सहायता प्रबंधन
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <a
+            href="tel:7860437507"
+            className="btn-primary w-full sm:w-auto px-6 py-3.5 text-base sm:text-lg flex items-center justify-center gap-3 shadow-lg hover:scale-105 transition-all cursor-pointer"
+            title="प्रबंधक संदीप कुमार सिंह से संपर्क करें"
+          >
+            <PhoneCall className="w-5 h-5 text-white animate-bounce" />
+            <span className="font-bold tracking-wide">फोन: 7860437507</span>
+          </a>
         </div>
       </div>
 

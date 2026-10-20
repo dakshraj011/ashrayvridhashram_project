@@ -34,7 +34,7 @@ export const Login: React.FC = () => {
     setErrorMsg('');
 
     try {
-      // Direct Admin login via password (e.g. radhe radhe)
+      // Direct Admin login via password (e.g. hare krishna)
       const res = await api.post('/auth/login', { password: password.trim() });
       if (res.data.success) {
         sessionStorage.setItem('admin_pwd_verified', 'true');
@@ -43,7 +43,7 @@ export const Login: React.FC = () => {
       }
     } catch (err: any) {
       setErrorMsg(
-        err.response?.data?.message || 'पासवर्ड अमान्य है। कृपया सही पासवर्ड (उदा. radhe radhe) दर्ज करें।'
+        err.response?.data?.message || 'पासवर्ड अमान्य है। कृपया सही पासवर्ड (उदा. hare krishna) दर्ज करें।'
       );
     } finally {
       setLoading(false);
@@ -94,7 +94,7 @@ export const Login: React.FC = () => {
                 autoFocus
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="पासवर्ड दर्ज करें (उदा. radhe radhe)"
+                placeholder="पासवर्ड दर्ज करें (उदा. hare krishna)"
                 className="w-full pl-11 pr-11 py-3.5 rounded-xl border-2 border-gold/50 bg-cream/50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-saffron font-medium text-base shadow-inner"
               />
               <button
@@ -108,7 +108,7 @@ export const Login: React.FC = () => {
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 flex items-center gap-1">
               <span>💡</span>
-              <span>पासवर्ड <strong>radhe radhe</strong> लिखकर एंटर करें।</span>
+              <span>पासवर्ड <strong>hare krishna</strong> लिखकर एंटर करें।</span>
             </p>
           </div>
 

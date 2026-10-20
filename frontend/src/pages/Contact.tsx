@@ -71,7 +71,7 @@ export const Contact: React.FC = () => {
                 <div>
                   <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">आश्रम पता</h4>
                   <p className="text-sm mt-1 leading-relaxed">
-                    108, आश्रय धाम, स्टेशन रोड, उरई - 285001, जिला जालौन (उत्तर प्रदेश)
+                    आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)
                   </p>
                 </div>
               </div>
@@ -82,7 +82,13 @@ export const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">फोन एवं व्हाट्सएप</h4>
-                  <p className="text-sm mt-1">+91 6306638958 / 05162-250108</p>
+                  <a
+                    href="tel:7860437507"
+                    className="text-base mt-1 block font-bold text-saffron hover:underline transition-colors"
+                    title="फोन करें: 7860437507"
+                  >
+                    7860437507
+                  </a>
                 </div>
               </div>
 
@@ -92,7 +98,13 @@ export const Contact: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-lg text-slate-900 dark:text-slate-100">ईमेल आईडी</h4>
-                  <p className="text-sm mt-1">info@aashray.org / help@aashray.org</p>
+                  <a
+                    href="mailto:dakshrajs104@gmail.com"
+                    className="text-base mt-1 block font-bold text-saffron hover:underline transition-colors"
+                    title="ईमेल भेजें: dakshrajs104@gmail.com"
+                  >
+                    dakshrajs104@gmail.com
+                  </a>
                 </div>
               </div>
             </div>

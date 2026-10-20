@@ -230,3 +230,18 @@
   background: linear-gradient(to bottom, #E87924, #D9AA55);
   border-radius: 5px;
 }
+
+/* Mobile Navigation Colour Effect & Touch Feedback */
+.mobile-nav-item {
+  -webkit-tap-highlight-color: rgba(232, 121, 36, 0.25);
+  touch-action: manipulation;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-nav-item:active {
+  background-color: #E87924 !important;
+  color: #FFF6E9 !important;
+  border-left-color: #D9AA55 !important;
+  transform: scale(0.98);
+  box-shadow: 0 4px 14px rgba(232, 121, 36, 0.35);
+}

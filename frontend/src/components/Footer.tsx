@@ -52,15 +52,19 @@ export const Footer: React.FC = () => {
           <h4 className="text-xl font-bold text-gold font-heading mb-3 border-b border-gold/30 pb-1">संपर्क विवरण</h4>
           <p className="text-xs text-cream/90 flex items-start gap-2">
             <MapPin className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-            <span>108, गोकुल धाम, श्रीकृष्ण जन्मभूमि मार्ग, मथुरा - 281001 (उ.प्र.)</span>
+            <span>आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)</span>
           </p>
           <p className="text-xs text-cream/90 flex items-center gap-2">
-            <Phone className="w-4 h-4 text-gold" />
-            <span>+91 9876543210 / 0565-240108</span>
+            <Phone className="w-4 h-4 text-gold flex-shrink-0" />
+            <a href="tel:7860437507" className="hover:text-gold underline decoration-gold/40 transition-colors font-bold">
+              7860437507
+            </a>
           </p>
           <p className="text-xs text-cream/90 flex items-center gap-2">
-            <Mail className="w-4 h-4 text-gold" />
-            <span>info@aashray.org</span>
+            <Mail className="w-4 h-4 text-gold flex-shrink-0" />
+            <a href="mailto:dakshrajs104@gmail.com" className="hover:text-gold underline decoration-gold/40 transition-colors font-bold">
+              dakshrajs104@gmail.com
+            </a>
           </p>
         </div>
 

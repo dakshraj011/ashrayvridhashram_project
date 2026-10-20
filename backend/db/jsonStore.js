@@ -53,7 +53,7 @@ class JsonStore {
 
     // 1. Ensure admin user only
     if (!this.data.users || this.data.users.length === 0) {
-      const adminHash = await bcrypt.hash('radhe radhe', 10);
+      const adminHash = await bcrypt.hash('hare krishna', 10);
       this.data.users = [
         {
           id: 1,
@@ -62,7 +62,7 @@ class JsonStore {
           mobile: '6306638958',
           password: adminHash,
           role: 'admin',
-          address: 'आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)',
+          address: 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)',
           is_active: 1,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -79,13 +79,13 @@ class JsonStore {
           name: 'आश्रय वृद्धाश्रम',
           tagline: 'वरिष्ठ नागरिकों का अपना स्नेहपूर्ण एवं सुरक्षित धाम',
           description: 'आश्रय वृद्धाश्रम उरई (जालौन) में असहाय, बेघर एवं वरिष्ठ नागरिकों की सेवा और देखभाल के लिए समर्पित एक गैर-लाभकारी संस्था है। यहाँ बुजुर्गों को सात्विक भोजन, नियमित स्वास्थ्य देखभाल, योगाभ्यास, भक्ति भजन और आत्मीय परिवार जैसा वातावरण प्रदान किया जाता है।',
-          address: '108, आश्रय धाम, स्टेशन रोड, उरई - 285001, जिला जालौन (उत्तर प्रदेश)',
-          phone: '+91 6306638958 / 05162-250108',
-          email: 'info@aashray.org',
+          address: 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)',
+          phone: '7860437507',
+          email: 'dakshrajs104@gmail.com',
           facilities: JSON.stringify([
             "24x7 स्वास्थ्य देखभाल एवं डॉक्टर परामर्श",
             "सात्विक एवं पौष्टिक भोजन",
-            "वातानुकूलित (AC) और आरामदायक कमरे",
+            "हवादार एवं आरामदायक कमरे",
             "दैनिक योग, ध्यान एवं श्री कृष्ण संकीर्तन",
             "पुस्तकालय एवं मनोरंजन कक्ष",
             "धार्मिक एवं सांस्कृतिक यात्राएँ"

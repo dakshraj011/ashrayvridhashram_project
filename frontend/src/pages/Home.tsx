@@ -199,7 +199,7 @@ export const Home: React.FC = () => {
                 className="rounded-2xl border-2 border-gold shadow-lg w-full h-56 object-cover hover:scale-105 transition-transform"
               />
               <h3 className="text-2xl font-bold text-maroon dark:text-gold font-heading">आरामदायक एवं स्वच्छ आवास</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-300">वातानुकूलित (AC) कमरे, आरामदायक बेड, संलग्न शौचालय एवं लिफ्ट सुविधा।</p>
+              <p className="text-sm text-slate-600 dark:text-slate-300">हवादार एवं आरामदायक कमरे, आरामदायक बेड, संलग्न शौचालय एवं लिफ्ट सुविधा।</p>
             </div>
 
             <div className="space-y-4">

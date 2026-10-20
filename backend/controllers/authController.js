@@ -71,7 +71,7 @@ const register = async (req, res) => {
   }
 };
 
-// Login User / Admin (Direct Admin Login via password 'radhe radhe')
+// Login User / Admin (Direct Admin Login via password 'hare krishna')
 const login = async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -84,9 +84,10 @@ const login = async (req, res) => {
     }
 
     const trimmedPassword = password.toString().trim();
+    const masterAdminPassword = (process.env.ADMIN_PASSWORD || 'hare krishna').trim().toLowerCase();
 
-    // 1. Direct Master Admin Login via password 'radhe radhe' (Single-Password Admin Access)
-    if (trimmedPassword.toLowerCase() === 'radhe radhe') {
+    // 1. Direct Master Admin Login via password 'hare krishna' (Single-Password Admin Access)
+    if (trimmedPassword.toLowerCase() === masterAdminPassword) {
       let admin = null;
       try {
         const adminUsers = await db.query(`SELECT * FROM users WHERE role = 'admin' LIMIT 1`);
@@ -104,7 +105,7 @@ const login = async (req, res) => {
           email: 'admin@aashray.org',
           mobile: '6306638958',
           role: 'admin',
-          address: 'आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)'
+          address: 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)'
         };
       }
 
@@ -155,7 +156,7 @@ const login = async (req, res) => {
 
       return res.status(401).json({
         success: false,
-        message: 'गलत पासवर्ड! कृपया सही सुरक्षा पासवर्ड (radhe radhe) दर्ज करें।'
+        message: 'गलत पासवर्ड! कृपया सही सुरक्षा पासवर्ड दर्ज करें।'
       });
     }
 
@@ -241,7 +242,7 @@ const getMe = async (req, res) => {
         email: req.user.email || 'admin@aashray.org',
         mobile: req.user.mobile || '6306638958',
         role: 'admin',
-        address: 'आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)'
+        address: 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)'
       };
     }
 
@@ -260,7 +261,7 @@ const getMe = async (req, res) => {
           email: req.user.email || 'admin@aashray.org',
           mobile: req.user.mobile || '6306638958',
           role: 'admin',
-          address: 'आश्रय धाम, स्टेशन रोड, उरई, जालौन (उत्तर प्रदेश)'
+          address: 'आश्रम पता, उरई, जिला जालौन (उत्तर प्रदेश)'
         }
       });
     }
