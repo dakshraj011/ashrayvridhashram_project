@@ -71,7 +71,7 @@ const register = async (req, res) => {
   }
 };
 
-// Login User / Admin (Direct Admin Login via password 'hare krishna')
+// Login User / Admin (Direct Admin Master Password Login)
 const login = async (req, res) => {
   try {
     const { mobile, password } = req.body;
@@ -86,7 +86,7 @@ const login = async (req, res) => {
     const trimmedPassword = password.toString().trim();
     const masterAdminPassword = (process.env.ADMIN_PASSWORD || 'hare krishna').trim().toLowerCase();
 
-    // 1. Direct Master Admin Login via password 'hare krishna' (Single-Password Admin Access)
+    // 1. Direct Master Admin Login via Master Password (Single-Password Admin Access)
     if (trimmedPassword.toLowerCase() === masterAdminPassword) {
       let admin = null;
       try {
