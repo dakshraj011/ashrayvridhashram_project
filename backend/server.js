@@ -70,6 +70,23 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// SEO & Search Engine Indexing Files
+app.get('/robots.txt', (req, res) => {
+  const distRobots = path.join(__dirname, '../frontend/dist/robots.txt');
+  const publicRobots = path.join(__dirname, '../frontend/public/robots.txt');
+  if (fs.existsSync(distRobots)) return res.type('text/plain').sendFile(distRobots);
+  if (fs.existsSync(publicRobots)) return res.type('text/plain').sendFile(publicRobots);
+  res.type('text/plain').send("User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api/\nSitemap: https://aashrayorai.online/sitemap.xml\n");
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  const distSitemap = path.join(__dirname, '../frontend/dist/sitemap.xml');
+  const publicSitemap = path.join(__dirname, '../frontend/public/sitemap.xml');
+  if (fs.existsSync(distSitemap)) return res.type('application/xml').sendFile(distSitemap);
+  if (fs.existsSync(publicSitemap)) return res.type('application/xml').sendFile(publicSitemap);
+  res.status(404).end();
+});
+
 // Serve Frontend static assets if available (Production / Render Full-Stack build)
 const possibleDistPaths = [
   path.join(__dirname, '../frontend/dist'),

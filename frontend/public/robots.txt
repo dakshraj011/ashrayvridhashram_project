@@ -1,0 +1,20 @@
+# Robots.txt for Aashray Old Age Home (https://aashrayorai.online/)
+# Allow public search engine crawlers to discover all public content and founder profile
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /needs
+Allow: /events
+Allow: /contact
+Allow: /meal-sponsorship
+Allow: /volunteer-register
+Allow: /elderly-assistance
+
+# Disallow private administrative panels and internal backend APIs
+Disallow: /admin
+Disallow: /api/
+Disallow: /manager
+Disallow: /dashboard
+
+# XML Sitemap Location
+Sitemap: https://aashrayorai.online/sitemap.xml

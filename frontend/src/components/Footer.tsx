@@ -75,12 +75,12 @@ export const Footer: React.FC = () => {
         <p>© 2026 आश्रय वृद्धाश्रम (AASHRAY). सर्वाधिकार सुरक्षित।</p>
         <p className="flex items-center gap-1.5 text-gold font-medium bg-gold/10 px-3.5 py-1 rounded-full border border-gold/30 shadow-sm">
           <PeacockFeatherIcon className="w-4 h-4" />
-          <span>Developed & Designed by</span>
+          <span>Founded & Led by</span>
           <Link
-            to="/about#developer"
+            to="/about#founder"
             className="font-bold text-white hover:text-gold underline decoration-gold/50 underline-offset-2 transition-colors"
           >
-            Daksh Raj Singh
+            Daksh raj Singh (Founder & CEO)
           </Link>
         </p>
         <p className="flex items-center gap-1">

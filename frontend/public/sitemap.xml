@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
+  <url>
+    <loc>https://aashrayorai.online/</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!-- About Us Page with Official Founder & CEO Profile -->
+  <url>
+    <loc>https://aashrayorai.online/about</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.95</priority>
+  </url>
+  <!-- Current Needs Page -->
+  <url>
+    <loc>https://aashrayorai.online/needs</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <!-- Events & Gallery Page -->
+  <url>
+    <loc>https://aashrayorai.online/events</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+  </url>
+  <!-- Contact Us Page -->
+  <url>
+    <loc>https://aashrayorai.online/contact</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <!-- Meal Sponsorship Service -->
+  <url>
+    <loc>https://aashrayorai.online/meal-sponsorship</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <!-- Volunteer Registration -->
+  <url>
+    <loc>https://aashrayorai.online/volunteer-register</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+  </url>
+  <!-- Elderly Assistance Request -->
+  <url>
+    <loc>https://aashrayorai.online/elderly-assistance</loc>
+    <lastmod>2026-10-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.70</priority>
+  </url>
+</urlset>

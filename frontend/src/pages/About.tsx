@@ -2,8 +2,25 @@ import React, { useState, useEffect } from 'react';
 import { SectionHeader, PeacockFeatherIcon } from '../components/KrishnaAccents';
 import api from '../services/api';
 import type { HomeInfo } from '../types';
-import { Heart, ShieldCheck, Sun, Sparkles, CheckCircle2, Phone, Mail, MapPin, Code2, ExternalLink, UserCheck, PhoneCall } from 'lucide-react';
-import developerPhoto from '../assets/developer-daksh.jpg';
+import {
+  Heart,
+  ShieldCheck,
+  Sun,
+  Sparkles,
+  CheckCircle2,
+  Phone,
+  Mail,
+  MapPin,
+  ExternalLink,
+  UserCheck,
+  PhoneCall,
+  Award,
+  Utensils,
+  Users,
+  Globe,
+  Code2
+} from 'lucide-react';
+import founderPhoto from '../assets/founder-daksh.jpg';
 
 const GithubIcon: React.FC<{ className?: string }> = ({ className = "w-5 h-5" }) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -27,6 +44,18 @@ export const About: React.FC = () => {
   const [info, setInfo] = useState<HomeInfo | null>(null);
 
   useEffect(() => {
+    // Dynamic page title & meta for search engine discovery and accessibility
+    document.title = "हमारे बारे में (About Us) - Founder & CEO Daksh raj Singh | आश्रय वृद्धाश्रम";
+    
+    // Ensure canonical and meta description exist on view
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute(
+        'content',
+        'आश्रय वृद्धाश्रम (Aashray Old Age Home) — वरिष्ठ नागरिकों के लिए व्यावहारिक सहायता, भोजन वितरण और स्वयंसेवा। संस्थापक एवं मुख्य कार्यकारी अधिकारी: Daksh raj Singh।'
+      );
+    }
+
     const fetchInfo = async () => {
       try {
         const res = await api.get('/home/info');
@@ -34,7 +63,7 @@ export const About: React.FC = () => {
           setInfo(res.data.info);
         }
       } catch (err) {
-        console.error(err);
+        console.error('About page info fetch error:', err);
       }
     };
     fetchInfo();
@@ -130,7 +159,7 @@ export const About: React.FC = () => {
         </div>
       </div>
 
-      {/* ASHRAM MANAGER & LEADERSHIP HIGHLIGHT */}
+      {/* ASHRAM MANAGER & OPERATIONS HIGHLIGHT */}
       <div className="bg-gradient-to-r from-amber-50/80 via-white to-orange-50/70 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 p-6 sm:p-8 rounded-3xl border-2 border-gold/50 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-5">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-maroon to-saffron text-gold flex items-center justify-center flex-shrink-0 shadow-lg border-2 border-gold/60">
@@ -239,112 +268,213 @@ export const About: React.FC = () => {
         </div>
       )}
 
-      {/* DEVELOPER PROFILE SECTION */}
-      <div id="developer" className="pt-6">
-        <div className="relative overflow-hidden bg-gradient-to-br from-amber-50/60 via-white to-orange-50/40 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 border-2 border-gold/40 shadow-xl rounded-3xl p-6 sm:p-8 md:p-10">
+      {/* OFFICIAL FOUNDER & CEO PROFILE SECTION */}
+      <section
+        id="founder"
+        aria-labelledby="founder-profile-heading"
+        className="pt-6 relative"
+      >
+        {/* Invisible anchor target for backwards compatibility with #developer links */}
+        <span id="developer" className="sr-only" tabIndex={-1}>
+          Developer Profile
+        </span>
+
+        <div className="relative overflow-hidden bg-gradient-to-br from-amber-50/80 via-white to-orange-50/60 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 border-2 border-gold/50 shadow-2xl rounded-3xl p-6 sm:p-8 md:p-10">
           
-          {/* Subtle Krishna Background Decor */}
-          <div className="absolute -top-12 -right-12 w-40 h-40 bg-saffron/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-gold/10 rounded-full blur-2xl pointer-events-none" />
+          {/* Subtle Spiritual Ambient Decor */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-saffron/15 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-gold/15 rounded-full blur-2xl pointer-events-none" />
 
           {/* Top Badge Bar */}
-          <div className="flex items-center justify-between flex-wrap gap-2 mb-6 border-b border-gold/20 pb-4">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-8 border-b border-gold/25 pb-4">
+            <div className="flex items-center gap-2.5">
               <PeacockFeatherIcon className="w-6 h-6 sm:w-7 sm:h-7" />
-              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-saffron bg-saffron/10 px-3.5 py-1 rounded-full border border-saffron/20">
-                ॥ डिजिटल सेवा एवं तकनीक ॥
+              <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-saffron bg-saffron/10 px-3.5 py-1 rounded-full border border-saffron/25">
+                ॥ संस्थापना एवं नेतृत्व ॥
               </span>
             </div>
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 flex items-center gap-1">
-              <Code2 className="w-4 h-4 text-gold" /> Website Developer Profile
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 bg-amber-50 dark:bg-slate-800 px-3.5 py-1 rounded-full border border-gold/40 shadow-sm">
+                <Award className="w-4 h-4 text-gold" />
+                <span>Founder & CEO Profile</span>
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-            {/* Developer Photo & Name */}
-            <div className="md:col-span-4 flex flex-col items-center justify-center text-center">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            {/* Left Column: Photo & Name & Badges */}
+            <div className="md:col-span-5 lg:col-span-4 flex flex-col items-center justify-center text-center">
               <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-r from-saffron via-gold to-emerald-500 rounded-3xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+                <div className="absolute -inset-1.5 bg-gradient-to-r from-saffron via-gold to-amber-500 rounded-3xl blur-md opacity-80 group-hover:opacity-100 transition duration-300"></div>
                 <img
-                  src={developerPhoto}
-                  alt="Daksh Raj Singh - Website Developer"
-                  className="relative w-48 h-48 sm:w-56 sm:h-56 object-cover object-top rounded-2xl border-4 border-white dark:border-slate-900 shadow-2xl transition-transform duration-300 group-hover:scale-[1.02]"
+                  src={founderPhoto}
+                  alt="Daksh raj Singh - Founder & CEO, Aashray"
+                  className="relative w-52 h-64 sm:w-60 sm:h-72 object-cover object-top rounded-2xl border-4 border-white dark:border-slate-800 shadow-2xl transition-transform duration-300 group-hover:scale-[1.01]"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/developer-daksh.jpg";
+                    const img = e.target as HTMLImageElement;
+                    if (img.src.includes('founder-daksh.jpg')) {
+                      img.src = '/developer-daksh.jpg';
+                    }
                   }}
                 />
               </div>
 
-              <div className="mt-4 space-y-1">
-                <h4 className="text-2xl font-extrabold text-maroon dark:text-gold font-heading">
-                  Daksh Raj Singh
-                </h4>
-                <p className="text-sm font-semibold text-saffron dark:text-amber-400 flex items-center justify-center gap-1.5">
-                  <Code2 className="w-4 h-4 text-gold" />
-                  Website Developer
+              <div className="mt-5 space-y-1.5 w-full">
+                <h3
+                  id="founder-profile-heading"
+                  className="text-2xl sm:text-3xl font-extrabold text-maroon dark:text-gold font-heading"
+                >
+                  Daksh raj Singh
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-semibold">
+                  (दक्ष राज सिंह)
                 </p>
+
+                <div className="pt-1.5 flex flex-col items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-saffron/15 text-maroon dark:text-gold font-extrabold text-sm sm:text-base border border-saffron/30 shadow-sm">
+                    <Sparkles className="w-4 h-4 text-saffron" />
+                    <span>Founder & CEO</span>
+                  </span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                    संस्थापक एवं प्रमुख — आश्रय (Aashray)
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Developer Bio & Social Links */}
-            <div className="md:col-span-8 space-y-5">
-              <div>
-                <div className="inline-block bg-maroon/10 dark:bg-gold/10 text-maroon dark:text-gold text-xs font-bold px-3 py-1 rounded-md mb-2">
-                  मुख्य डेवलपर एवं तकनीक निर्माता
+            {/* Right Column: Bio, Official Statement & Key Pillars */}
+            <div className="md:col-span-7 lg:col-span-8 space-y-6">
+              
+              {/* Official Leadership Statement Box */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-100/70 via-white to-amber-50 dark:from-slate-800 dark:via-slate-800/90 dark:to-slate-800/70 border-l-4 border-gold shadow-sm">
+                <p className="text-xs uppercase tracking-wider font-extrabold text-saffron mb-1 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-saffron" />
+                  आधिकारिक नेतृत्व विवरण (Official Leadership Statement)
+                </p>
+                <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed">
+                  Daksh raj Singh founded and leads Aashray, based on the information provided by the website owner.
+                </p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
+                  (वेबसाइट स्वामी द्वारा उपलब्ध कराई गई आधिकारिक जानकारी के आधार पर, श्री Daksh raj Singh ने आश्रय (Aashray) की स्थापना की है और वे इस संस्था का संपूर्ण संचालन व नेतृत्व करते हैं।)
+                </p>
+              </div>
+
+              {/* Mission & Initiative Description */}
+              <div className="space-y-3">
+                <h4 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white font-heading">
+                  आश्रय वृद्धाश्रम (Aashray Old Age Home) — सेवा संकल्प
+                </h4>
+                <p className="text-base sm:text-lg text-slate-700 dark:text-slate-200 leading-relaxed">
+                  <strong>Aashray Old Age Home</strong> — a community service initiative focused on supporting elderly people through practical help, volunteering and food distribution.
+                </p>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed bg-white/70 dark:bg-slate-800/60 p-4 rounded-xl border border-gold/20 shadow-inner">
+                  "हमारा स्पष्ट ध्येय है कि समाज का कोई भी असहाय अथवा निराश्रित वरिष्ठ नागरिक अकेला महसूस न करे। सात्विक भोजन वितरण, व्यावहारिक दैनिक सहयोग और युवाओं की सक्रिय स्वयंसेवा के माध्यम से बुजुर्गों को गरिमापूर्ण, स्वस्थ और सम्मानजनक जीवन उपलब्ध कराना ही इस सेवा का मूल उद्देश्य है।"
+                </p>
+              </div>
+
+              {/* 3 Core Pillars */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-gold/30 shadow-sm space-y-1">
+                  <div className="flex items-center gap-2 text-saffron font-bold text-sm">
+                    <Utensils className="w-4 h-4" />
+                    <span>भोजन वितरण</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    बुजुर्गों के लिए नियमित पौष्टिक व सात्विक आहार की व्यवस्था।
+                  </p>
                 </div>
-                <h3 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white font-heading">
-                  आश्रय (Aashray) मंच विकास
-                </h3>
+
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-gold/30 shadow-sm space-y-1">
+                  <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+                    <Heart className="w-4 h-4" />
+                    <span>व्यावहारिक सहायता</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    आवास, स्वास्थ्य परीक्षण एवं दैनिक जरूरतों में संबल।
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-gold/30 shadow-sm space-y-1">
+                  <div className="flex items-center gap-2 text-maroon dark:text-gold font-bold text-sm">
+                    <Users className="w-4 h-4" />
+                    <span>युवा स्वयंसेवा</span>
+                  </div>
+                  <p className="text-xs text-slate-600 dark:text-slate-400">
+                    समाज के सेवाभावी नागरिकों को वृद्ध सेवा अभियान से जोड़ना।
+                  </p>
+                </div>
               </div>
 
-              <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed bg-white/80 dark:bg-slate-800/80 p-5 rounded-2xl border border-gold/20 shadow-inner">
-                "मैंने आश्रय (Aashray) डिजिटल मंच का निर्माण श्री कृष्ण की प्रेरणा से असहाय, बेघर एवं पूज्य वरिष्ठ नागरिकों की सेवा, सहयोग और सहायता प्रबंधन को सुगम एवं पारदर्शी बनाने के उद्देश्य से किया है। यह डिजिटल पहल समाज के बुजुर्गों के जीवन में सम्मान, संबल और बेहतर सुविधाएं प्रदान करने के लिए समर्पित है।"
-              </p>
+              {/* Genuine Public Profiles & Official Links (sameAs) */}
+              <div className="pt-2 border-t border-gold/20 space-y-3">
+                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  सार्वजनिक व आधिकारिक प्रोफ़ाइल (Verified Public Profiles)
+                </p>
 
-              {/* Social Connections */}
-              <div className="pt-2 flex flex-wrap items-center gap-4">
-                <a
-                  href="https://www.linkedin.com/in/daksh-raj-singh-b68086295?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-[#0077b5] text-white hover:bg-[#006396] shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
-                  title="Daksh Raj Singh on LinkedIn"
-                >
-                  <LinkedinIcon className="w-5 h-5 text-white" />
-                  <span>LinkedIn Profile</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-                </a>
+                <div className="flex flex-wrap items-center gap-3">
+                  <a
+                    href="https://www.linkedin.com/in/daksh-raj-singh-b68086295?utm_source=share_via&utm_content=profile&utm_medium=member_ios"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-[#0077b5] text-white hover:bg-[#006396] shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
+                    title="Daksh raj Singh on LinkedIn"
+                  >
+                    <LinkedinIcon className="w-4 h-4 text-white" />
+                    <span>LinkedIn Profile</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                  </a>
 
-                <a
-                  href="https://instagram.com/dakshraj_singh11?srtk=aGM0czMweWpmYXRk&utm_source=qr"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white hover:opacity-95 shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
-                  title="Daksh Raj Singh on Instagram (@dakshraj_singh11)"
-                >
-                  <InstagramIcon className="w-5 h-5 text-white" />
-                  <span>Instagram Profile</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-80" />
-                </a>
+                  <a
+                    href="https://instagram.com/dakshraj_singh11?srtk=aGM0czMweWpmYXRk&utm_source=qr"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#833ab4] via-[#fd1d1d] to-[#fcb045] text-white hover:opacity-95 shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
+                    title="Daksh raj Singh on Instagram (@dakshraj_singh11)"
+                  >
+                    <InstagramIcon className="w-4 h-4 text-white" />
+                    <span>Instagram Profile</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                  </a>
 
-                <a
-                  href="https://github.com/dakshraj011"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-700 shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
-                  title="Daksh Raj Singh on GitHub"
-                >
-                  <GithubIcon className="w-5 h-5 text-gold" />
-                  <span>GitHub Profile</span>
-                  <ExternalLink className="w-3.5 h-3.5 opacity-70" />
-                </a>
+                  <a
+                    href="https://github.com/dakshraj011"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-700 shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
+                    title="Daksh raj Singh on GitHub"
+                  >
+                    <GithubIcon className="w-4 h-4 text-gold" />
+                    <span>GitHub Profile</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-70" />
+                  </a>
+
+                  <a
+                    href="https://aashrayorai.online/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-amber-600/90 hover:bg-amber-600 text-white shadow-md font-medium text-sm transition-all transform hover:-translate-y-0.5"
+                    title="Aashray Official Website"
+                  >
+                    <Globe className="w-4 h-4 text-white" />
+                    <span>Official Website</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+                  </a>
+                </div>
+
+                <div className="pt-1 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                  <Code2 className="w-3.5 h-3.5 text-gold" />
+                  <span>
+                    डिजिटल मंच निर्माण एवं तकनीकी देखरेख: <strong>Daksh raj Singh</strong> (Lead Developer & Creator)
+                  </span>
+                </div>
               </div>
+
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
     </div>
   );
 };
-
