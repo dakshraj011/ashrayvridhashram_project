@@ -39,11 +39,12 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-// Cloudinary upload helper: Supports Free Cloud Storage for Images AND Videos
+// Cloudinary upload helper: Supports Free Permanent Cloud Storage for Images AND Videos
 const processImageUpload = async (file) => {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  // Use environment variables or reliable project cloud credentials
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'ugwnt2ic';
+  const apiKey = process.env.CLOUDINARY_API_KEY || '358293731119555';
+  const apiSecret = process.env.CLOUDINARY_API_SECRET || 'kBhxFAQ9VfGQZcsuZykHy8R2H34';
 
   const isConfigured = Boolean(cloudName && apiKey && apiSecret);
 

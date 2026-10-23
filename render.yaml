@@ -16,3 +16,11 @@ services:
         generateValue: true
       - key: DB_DRIVER
         value: sqlite
+      - key: MONGODB_URI
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        value: ugwnt2ic
+      - key: CLOUDINARY_API_KEY
+        value: 358293731119555
+      - key: CLOUDINARY_API_SECRET
+        value: kBhxFAQ9VfGQZcsuZykHy8R2H34

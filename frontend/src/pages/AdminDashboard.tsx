@@ -8,11 +8,12 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import type {
   User, Need, MealRequest, VolunteerRegistration, AssistanceRequest,
-  Event, ContactSubmission, DashboardStats
+  Event, ContactSubmission, DashboardStats, GalleryImage
 } from '../types';
 import {
-  Plus, Search, Edit, Trash2, Send, Download, Lock, KeyRound, RotateCw
+  Plus, Search, Edit, Trash2, Send, Download, Lock, KeyRound, RotateCw, Images, Sparkles
 } from 'lucide-react';
+import { getAssetUrl } from '../services/api';
 
 export const AdminDashboard: React.FC = () => {
   const { login } = useAuth();
@@ -34,6 +35,7 @@ export const AdminDashboard: React.FC = () => {
   const [assistanceList, setAssistanceList] = useState<AssistanceRequest[]>([]);
   const [needsList, setNeedsList] = useState<Need[]>([]);
   const [eventsList, setEventsList] = useState<Event[]>([]);
+  const [galleryList, setGalleryList] = useState<GalleryImage[]>([]);
   const [contactsList, setContactsList] = useState<ContactSubmission[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [actionMsg, setActionMsg] = useState<string>('');
@@ -112,6 +114,18 @@ export const AdminDashboard: React.FC = () => {
     images: []
   });
 
+  // Add Direct Gallery Photo State
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [galleryForm, setGalleryForm] = useState<{
+    title: string;
+    category: string;
+    images: string[];
+  }>({
+    title: '',
+    category: 'कार्यक्रम',
+    images: []
+  });
+
   // Broadcast Announcement State
   const [broadcast, setBroadcast] = useState({ title: '', message: '' });
 
@@ -139,7 +153,10 @@ export const AdminDashboard: React.FC = () => {
       if (volRes.status === 'fulfilled' && volRes.value.data.success) setVolunteersList(volRes.value.data.registrations || volRes.value.data.volunteers || []);
       if (astRes.status === 'fulfilled' && astRes.value.data.success) setAssistanceList(astRes.value.data.requests || astRes.value.data.assistance || []);
       if (needsRes.status === 'fulfilled' && needsRes.value.data.success) setNeedsList(needsRes.value.data.needs || []);
-      if (evtsRes.status === 'fulfilled' && evtsRes.value.data.success) setEventsList(evtsRes.value.data.events || []);
+      if (evtsRes.status === 'fulfilled' && evtsRes.value.data.success) {
+        setEventsList(evtsRes.value.data.events || []);
+        setGalleryList(evtsRes.value.data.gallery || []);
+      }
       if (contactsRes.status === 'fulfilled' && contactsRes.value.data.success) setContactsList(contactsRes.value.data.messages || contactsRes.value.data.submissions || []);
     } catch (err) {
       console.error('Admin data fetch error:', err);
@@ -380,6 +397,50 @@ export const AdminDashboard: React.FC = () => {
           fetchDashboardData();
         } catch (err) {
           showNotification('त्रुटि।');
+        } finally {
+          setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+        }
+      }
+    });
+  };
+
+  // Save Direct Gallery Photos
+  const handleSaveGallery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!galleryForm.images || galleryForm.images.length === 0) {
+      showNotification('कृपया कम से कम एक तस्वीर अपलोड करें।');
+      return;
+    }
+    try {
+      for (const imgUrl of galleryForm.images) {
+        await api.post('/events/gallery', {
+          title: galleryForm.title.trim() || 'आश्रम पावन स्मृति',
+          image_url: imgUrl,
+          category: galleryForm.category || 'कार्यक्रम'
+        });
+      }
+      showNotification(`${galleryForm.images.length} तस्वीरें गैलरी में स्थायी रूप से सहेज दी गईं!`);
+      setShowGalleryModal(false);
+      setGalleryForm({ title: '', category: 'कार्यक्रम', images: [] });
+      fetchDashboardData();
+    } catch (err: any) {
+      showNotification('तस्वीरें गैलरी में सहेजने में त्रुटि हुई।');
+    }
+  };
+
+  // Delete Individual Gallery Photo
+  const handleDeleteGalleryPhoto = (id: number | string, title: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'गैलरी तस्वीर हटाने की पुष्टि',
+      message: `क्या आप '${title || 'तस्वीर'}' को गैलरी से हटाना चाहते हैं?`,
+      onConfirm: async () => {
+        try {
+          await api.delete(`/events/gallery/${id}`);
+          showNotification('तस्वीर गैलरी से हटा दी गई!');
+          fetchDashboardData();
+        } catch (err) {
+          showNotification('हटाने में त्रुटि।');
         } finally {
           setConfirmModal({ isOpen: false, title: '', message: '', onConfirm: () => {} });
         }
@@ -1066,19 +1127,106 @@ export const AdminDashboard: React.FC = () => {
         </div>
       ) : activeTab === 'events' ? (
         /* EVENTS & GALLERY MANAGEMENT */
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-2xl font-bold text-maroon dark:text-gold font-heading">कार्यक्रम प्रबंधन</h3>
-            <button
-              onClick={() => setShowEventModal(!showEventModal)}
-              className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" /> नया कार्यक्रम जोड़ें
-            </button>
+        <div className="space-y-6">
+          <div className="flex flex-wrap justify-between items-center gap-3">
+            <h3 className="text-2xl font-bold text-maroon dark:text-gold font-heading">
+              कार्यक्रम एवं फोटो गैलरी प्रबंधन (Events & Gallery)
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setShowGalleryModal(!showGalleryModal);
+                  setShowEventModal(false);
+                }}
+                className="btn-gold text-sm py-2 px-4 flex items-center gap-2"
+              >
+                <Images className="w-4 h-4" /> गैलरी में फोटो जोड़ें
+              </button>
+              <button
+                onClick={() => {
+                  setShowEventModal(!showEventModal);
+                  setShowGalleryModal(false);
+                }}
+                className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> नया कार्यक्रम जोड़ें
+              </button>
+            </div>
           </div>
 
+          {/* DIRECT GALLERY PHOTO UPLOAD MODAL */}
+          {showGalleryModal && (
+            <form onSubmit={handleSaveGallery} className="card-krishna space-y-4 border-2 border-gold shadow-xl">
+              <div className="flex items-center gap-2">
+                <Images className="w-5 h-5 text-saffron" />
+                <h4 className="text-xl font-bold text-maroon dark:text-gold font-heading">
+                  गैलरी में सीधे तस्वीरें जोड़ें (Direct Gallery Upload)
+                </h4>
+              </div>
+              <p className="text-xs text-slate-500">
+                यहाँ अपलोड की गई तस्वीरें स्थायी क्लाउड स्टोरेज (Cloudinary + MongoDB Atlas) में सहेजी जाएंगी और वेबसाइट की गैलरी में स्वतः प्रदर्शित होंगी।
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold mb-1">शीर्षक / विवरण *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="उदा. दीपावली उत्सव, सात्विक भोजन सेवा, प्रांगण दर्शन"
+                    value={galleryForm.title}
+                    onChange={(e) => setGalleryForm({ ...galleryForm, title: e.target.value })}
+                    className="w-full p-2.5 border rounded-xl bg-cream/50 dark:bg-slate-800"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold mb-1">श्रेणी (Category)</label>
+                  <select
+                    value={galleryForm.category}
+                    onChange={(e) => setGalleryForm({ ...galleryForm, category: e.target.value })}
+                    className="w-full p-2.5 border rounded-xl bg-cream/50 dark:bg-slate-800"
+                  >
+                    <option value="कार्यक्रम">कार्यक्रम (Event)</option>
+                    <option value="भोजन वितरण">भोजन वितरण (Food Service)</option>
+                    <option value="स्वास्थ्य सेवा">स्वास्थ्य सेवा (Health Camp)</option>
+                    <option value="संकीर्तन व भजन">संकीर्तन व भजन (Satsang)</option>
+                    <option value="आश्रम दर्शन">आश्रम दर्शन (Premises)</option>
+                    <option value="सामान्य">सामान्य (General)</option>
+                  </select>
+                </div>
+              </div>
+
+              <MultiImageUploader
+                label="गैलरी की तस्वीरें अपलोड करें (अधिकतम 5 फ़ोटो एक बार में)"
+                maxPhotos={5}
+                images={galleryForm.images}
+                onChange={(urls) => setGalleryForm({
+                  ...galleryForm,
+                  images: urls
+                })}
+              />
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowGalleryModal(false);
+                    setGalleryForm({ title: '', category: 'कार्यक्रम', images: [] });
+                  }}
+                  className="px-4 py-2 font-bold text-slate-600"
+                >
+                  रद्द करें
+                </button>
+                <button type="submit" className="btn-secondary text-sm py-2 px-6">
+                  स्थायी रूप से सहेजें (Save to Gallery)
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* ADD EVENT MODAL */}
           {showEventModal && (
-            <form onSubmit={handleSaveEvent} className="card-krishna space-y-4 border-2 border-maroon">
+            <form onSubmit={handleSaveEvent} className="card-krishna space-y-4 border-2 border-maroon shadow-xl">
               <h4 className="text-xl font-bold text-maroon dark:text-gold font-heading">नया कार्यक्रम दर्ज करें</h4>
               <div>
                 <label className="block text-sm font-bold mb-1">शीर्षक *</label>
@@ -1138,26 +1286,90 @@ export const AdminDashboard: React.FC = () => {
             </form>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {eventsList.map((e) => (
-              <div key={e.id} className="card-krishna flex flex-col justify-between">
-                <div>
-                  <img src={e.image_url || "https://images.unsplash.com/photo-1609137144813-7d9921338f24?auto=format&fit=crop&w=800&q=80"} alt={e.title} className="w-full h-40 object-cover rounded-lg mb-2" />
-                  <span className="text-xs text-saffron font-bold">{e.event_date}</span>
-                  <h4 className="text-xl font-bold">{e.title}</h4>
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">{e.description}</p>
-                </div>
-                <div className="pt-3 flex justify-end">
-                  <button
-                    onClick={() => handleDeleteEvent(e.id, e.title)}
-                    className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </div>
+          {/* EVENTS LIST */}
+          <div className="space-y-3">
+            <h4 className="text-lg font-bold text-maroon dark:text-gold font-heading flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-saffron" />
+              दर्ज कार्यक्रम सूची ({eventsList.length})
+            </h4>
+
+            {eventsList.length === 0 ? (
+              <p className="text-xs text-slate-500 italic p-4 bg-white/60 dark:bg-slate-900 rounded-xl border">
+                कोई कार्यक्रम दर्ज नहीं है। नया कार्यक्रम जोड़ने के लिए ऊपर बटन दबाएँ।
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {eventsList.map((e) => (
+                  <div key={e.id} className="card-krishna flex flex-col justify-between">
+                    <div>
+                      <img src={getAssetUrl(e.image_url) || "https://images.unsplash.com/photo-1609137144813-7d9921338f24?auto=format&fit=crop&w=800&q=80"} alt={e.title} className="w-full h-40 object-cover rounded-lg mb-2" />
+                      <span className="text-xs text-saffron font-bold">{String(e.event_date).split('T')[0]}</span>
+                      <h4 className="text-xl font-bold">{e.title}</h4>
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">{e.description}</p>
+                    </div>
+                    <div className="pt-3 flex justify-end">
+                      <button
+                        onClick={() => handleDeleteEvent(e.id, e.title)}
+                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
+                        title="कार्यक्रम हटाएँ"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            )}
           </div>
+
+          {/* ALL GALLERY PHOTOS GRID */}
+          <div className="space-y-3 pt-6 border-t border-gold/30">
+            <div className="flex justify-between items-center">
+              <h4 className="text-lg font-bold text-maroon dark:text-gold font-heading flex items-center gap-2">
+                <Images className="w-4 h-4 text-saffron" />
+                गैलरी तस्वीरें (All Gallery Photos) ({galleryList.length})
+              </h4>
+            </div>
+
+            {galleryList.length === 0 ? (
+              <p className="text-xs text-slate-500 italic p-4 bg-white/60 dark:bg-slate-900 rounded-xl border">
+                गैलरी में कोई अलग तस्वीर नहीं है। तस्वीरें जोड़ने के लिए 'गैलरी में फोटो जोड़ें' पर क्लिक करें।
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {galleryList.map((g, idx) => (
+                  <div key={g.id || idx} className="relative group rounded-xl overflow-hidden border border-gold/40 shadow bg-slate-900 aspect-square flex flex-col justify-end">
+                    <img
+                      src={getAssetUrl(g.image_url)}
+                      alt={g.title}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
+                    
+                    <div className="absolute top-1.5 left-1.5">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-maroon/85 text-gold border border-gold/40">
+                        {g.category || 'गैलरी'}
+                      </span>
+                    </div>
+
+                    <div className="relative z-10 p-2 flex items-center justify-between text-white">
+                      <span className="text-xs font-bold truncate max-w-[80%] text-amber-200">
+                        {g.title || 'तस्वीर'}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteGalleryPhoto(g.id || (g as any)._id, g.title)}
+                        className="p-1 rounded bg-rose-600/80 hover:bg-rose-700 text-white cursor-pointer shadow"
+                        title="गैलरी से तस्वीर हटाएँ"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
         </div>
       ) : activeTab === 'contacts' ? (
         /* CONTACT SUBMISSIONS */

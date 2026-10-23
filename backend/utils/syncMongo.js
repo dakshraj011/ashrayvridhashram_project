@@ -4,6 +4,8 @@ const AssistanceRequest = require('../models/AssistanceRequest');
 const VolunteerRegistration = require('../models/VolunteerRegistration');
 const ContactSubmission = require('../models/ContactSubmission');
 const Need = require('../models/Need');
+const Event = require('../models/Event');
+const GalleryImage = require('../models/GalleryImage');
 const { getMongoStatus } = require('../db/mongoConnect');
 
 const syncSqliteToMongo = async () => {
@@ -14,11 +16,11 @@ const syncSqliteToMongo = async () => {
   }
 
   console.log('🔄 [MongoDB Sync] Starting data sync from SQL to MongoDB...');
-  const stats = { meals: 0, assistance: 0, volunteers: 0, contacts: 0, needs: 0 };
+  const stats = { meals: 0, assistance: 0, volunteers: 0, contacts: 0, needs: 0, events: 0, gallery: 0 };
 
   try {
     // 1. Sync Meals
-    const meals = await db.query('SELECT * FROM meal_requests');
+    const meals = await db.query('SELECT * FROM meal_requests').catch(() => []);
     for (const m of meals) {
       const exists = await MealRequest.findOne({ legacy_id: m.id });
       if (!exists) {
@@ -40,7 +42,7 @@ const syncSqliteToMongo = async () => {
     }
 
     // 2. Sync Assistance (Medicine/Shelter)
-    const assists = await db.query('SELECT * FROM assistance_requests');
+    const assists = await db.query('SELECT * FROM assistance_requests').catch(() => []);
     for (const a of assists) {
       const exists = await AssistanceRequest.findOne({ legacy_id: a.id });
       if (!exists) {
@@ -62,7 +64,7 @@ const syncSqliteToMongo = async () => {
     }
 
     // 3. Sync Volunteers
-    const vols = await db.query('SELECT * FROM volunteer_registrations');
+    const vols = await db.query('SELECT * FROM volunteer_registrations').catch(() => []);
     for (const v of vols) {
       const exists = await VolunteerRegistration.findOne({ legacy_id: v.id });
       if (!exists) {
@@ -84,7 +86,7 @@ const syncSqliteToMongo = async () => {
     }
 
     // 4. Sync Contact Submissions
-    const contacts = await db.query('SELECT * FROM contact_submissions');
+    const contacts = await db.query('SELECT * FROM contact_submissions').catch(() => []);
     for (const c of contacts) {
       const exists = await ContactSubmission.findOne({ legacy_id: c.id });
       if (!exists) {
@@ -103,7 +105,7 @@ const syncSqliteToMongo = async () => {
     }
 
     // 5. Sync Needs
-    const needs = await db.query('SELECT * FROM needs');
+    const needs = await db.query('SELECT * FROM needs').catch(() => []);
     for (const n of needs) {
       const exists = await Need.findOne({ legacy_id: n.id });
       if (!exists) {
@@ -121,6 +123,47 @@ const syncSqliteToMongo = async () => {
           createdAt: n.created_at || new Date()
         });
         stats.needs++;
+      }
+    }
+
+    // 6. Sync Events
+    const events = await db.query('SELECT * FROM events').catch(() => []);
+    for (const e of events) {
+      const exists = await Event.findOne({
+        $or: [{ legacy_id: e.id }, { title: e.title, event_date: (e.event_date || '').toString().split('T')[0] }]
+      });
+      if (!exists) {
+        await Event.create({
+          title: e.title,
+          event_date: (e.event_date || '').toString().split('T')[0],
+          description: e.description || '',
+          image_url: e.image_url || null,
+          photos: e.image_url ? [e.image_url] : [],
+          is_published: e.is_published !== undefined ? e.is_published : 1,
+          created_by: e.created_by || 1,
+          legacy_id: e.id,
+          createdAt: e.created_at || new Date()
+        });
+        stats.events++;
+      }
+    }
+
+    // 7. Sync Gallery Images
+    const gallery = await db.query('SELECT * FROM gallery_images').catch(() => []);
+    for (const g of gallery) {
+      const exists = await GalleryImage.findOne({
+        $or: [{ legacy_id: g.id }, { image_url: g.image_url }]
+      });
+      if (!exists) {
+        await GalleryImage.create({
+          event_id: g.event_id || null,
+          title: g.title || 'आश्रम गैलरी',
+          image_url: g.image_url,
+          category: g.category || 'कार्यक्रम',
+          legacy_id: g.id,
+          createdAt: g.created_at || new Date()
+        });
+        stats.gallery++;
       }
     }
 

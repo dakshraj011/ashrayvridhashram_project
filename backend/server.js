@@ -105,9 +105,9 @@ app.use('/api', (req, res) => {
   res.status(404).json({ success: false, message: 'एपीआई मार्ग नहीं मिला (API Route Not Found)' });
 });
 
-// Fallback: For any other unhandled GET route, serve SPA index.html if dist exists
+// Fallback: For any other unhandled GET or HEAD route, serve SPA index.html if dist exists
 app.use((req, res) => {
-  if (frontendDist && req.method === 'GET') {
+  if (frontendDist && (req.method === 'GET' || req.method === 'HEAD')) {
     return res.sendFile(path.join(frontendDist, 'index.html'));
   }
   res.status(404).json({ success: false, message: 'एपीआई मार्ग नहीं मिला (API Route Not Found)' });
